@@ -40,7 +40,7 @@ SQL: [`examples/churn-metrics.csv`](examples/churn-metrics.csv)
 |---|---|---|
 | `metric` | yes | Marketing ROI |
 | `description` | yes | How efficient our marketing spend is |
-| `reasoning` | yes | compare what we spent on ads against the revenue it brought in |
+| `reasoning` | yes | compare what we spent on ads against the revenue it brought in - probably need ad spend and revenue numbers |
 | `importance` | yes (`low`/`medium`/`high`) | medium |
 
 `reasoning` is deliberately loose — no SQL, no table names required. It's
