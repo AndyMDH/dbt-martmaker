@@ -34,18 +34,16 @@ you. After that: edit that sheet, or start a new one, and tell your agent
 to run it.
 
 **Example sheet** — one row per metric, in the stakeholder's own words, not
-SQL: [`examples/churn-metrics.csv`](examples/churn-metrics.csv)
+SQL:
 
-| Column | Required | Example |
-|---|---|---|
-| `metric` | yes | Marketing ROI |
-| `description` | yes | How efficient our marketing spend is |
-| `reasoning` | yes | compare what we spent on ads against the revenue it brought in - probably need ad spend and revenue numbers |
-| `importance` | yes (`low`/`medium`/`high`) | medium |
+<p align="center">
+  <img src="examples/sheet-preview.svg" alt="example metric sheet" width="780">
+</p>
 
 `reasoning` is deliberately loose — no SQL, no table names required. It's
 what the skill mines to *propose* the matched columns and calculation,
-which you then approve or correct.
+which you then approve or correct. Full file:
+[`examples/churn-metrics.csv`](examples/churn-metrics.csv)
 
 **Output** — a proposal, then approved draft models:
 [`examples/proposal.md`](examples/proposal.md)
