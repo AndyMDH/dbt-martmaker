@@ -45,8 +45,14 @@ what the skill mines to *propose* the matched columns and calculation,
 which you then approve or correct. Full file:
 [`examples/churn-metrics.csv`](examples/churn-metrics.csv)
 
-**Output** — a proposal, then approved draft models:
-[`examples/proposal.md`](examples/proposal.md)
+**Output** — a proposal (this is the Summary table; full detail plus open
+questions below it):
+
+<p align="center">
+  <img src="examples/proposal-preview.svg" alt="example proposal summary table" width="850">
+</p>
+
+Full file: [`examples/proposal.md`](examples/proposal.md)
 
 **Under the hood:**
 1. Parses the sheet, reading `reasoning` for candidate tables/columns and a

@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 330" font-family="Helvetica, Arial, sans-serif">
+  <style>
+    .header-bg { fill: #f6f8fa; }
+    .row-a { fill: #ffffff; }
+    .row-b { fill: #fbfbfc; }
+    .border { stroke: #d0d7de; stroke-width: 1; }
+    .header-text { font-size: 12px; font-weight: 700; fill: #1f2328; }
+    .cell-text { font-size: 11px; fill: #1f2328; }
+    .cell-code { font-size: 11px; fill: #1f2328; font-family: "SF Mono", Consolas, monospace; }
+    .cell-muted { font-size: 11px; fill: #57606a; }
+    .pill { font-size: 10px; font-weight: 700; }
+    .pill-low { fill: #eaeef2; } .pill-low-t { fill: #57606a; }
+    .pill-medium { fill: #fff8c5; } .pill-medium-t { fill: #9a6700; }
+    .pill-high { fill: #ffedd5; } .pill-high-t { fill: #c2410c; }
+    .pill-matched { fill: #dafbe1; } .pill-matched-t { fill: #1a7f37; }
+    .pill-ambiguous { fill: #fff8c5; } .pill-ambiguous-t { fill: #9a6700; }
+    .pill-blocked { fill: #ffebe9; } .pill-blocked-t { fill: #cf222e; }
+  </style>
+
+  <rect x="20" y="20" width="810" height="298" fill="none" class="border" rx="6"/>
+
+  <!-- header -->
+  <rect x="20" y="20" width="810" height="34" class="header-bg" rx="6"/>
+  <rect x="20" y="42" width="810" height="12" class="header-bg"/>
+  <text class="header-text" x="30" y="42">Metric</text>
+  <text class="header-text" x="150" y="42">Column used</text>
+  <text class="header-text" x="240" y="42">Description</text>
+  <text class="header-text" x="400" y="42">Proposed calc.</text>
+  <text class="header-text" x="570" y="42">Tests</text>
+  <text class="header-text" x="680" y="42">Importance</text>
+  <text class="header-text" x="755" y="42">Status</text>
+
+  <!-- column separators -->
+  <line x1="140" y1="20" x2="140" y2="318" class="border"/>
+  <line x1="230" y1="20" x2="230" y2="318" class="border"/>
+  <line x1="390" y1="20" x2="390" y2="318" class="border"/>
+  <line x1="560" y1="20" x2="560" y2="318" class="border"/>
+  <line x1="670" y1="20" x2="670" y2="318" class="border"/>
+  <line x1="745" y1="20" x2="745" y2="318" class="border"/>
+
+  <!-- row 1: Payment count -->
+  <rect x="20" y="54" width="810" height="66" class="row-a"/>
+  <line x1="20" y1="54" x2="830" y2="54" class="border"/>
+  <text class="cell-text" x="30" y="91">Payment count</text>
+  <text class="cell-code" x="150" y="91">stg_payments</text>
+  <text class="cell-text" x="240" y="83">Number of payments</text>
+  <text class="cell-text" x="240" y="98">processed</text>
+  <text class="cell-muted" x="400" y="83">count of rows in</text>
+  <text class="cell-muted" x="400" y="98">stg_payments</text>
+  <text class="cell-muted" x="570" y="83">none (low</text>
+  <text class="cell-muted" x="570" y="98">importance)</text>
+  <rect x="675" y="79" width="52" height="20" rx="10" class="pill-low"/>
+  <text class="pill pill-low-t" x="701" y="93" text-anchor="middle">low</text>
+  <rect x="750" y="79" width="66" height="20" rx="10" class="pill-matched"/>
+  <text class="pill pill-matched-t" x="783" y="93" text-anchor="middle">Matched</text>
+
+  <!-- row 2: Monthly churned users -->
+  <rect x="20" y="120" width="810" height="66" class="row-b"/>
+  <line x1="20" y1="120" x2="830" y2="120" class="border"/>
+  <text class="cell-text" x="30" y="149">Monthly churned</text>
+  <text class="cell-text" x="30" y="164">users</text>
+  <text class="cell-muted" x="150" y="157">—</text>
+  <text class="cell-text" x="240" y="149">Active in last 30 days</text>
+  <text class="cell-text" x="240" y="164">then inactive</text>
+  <text class="cell-muted" x="400" y="149">— (blocked, see</text>
+  <text class="cell-muted" x="400" y="164">below)</text>
+  <text class="cell-muted" x="570" y="157">—</text>
+  <rect x="669" y="145" width="64" height="20" rx="10" class="pill-high"/>
+  <text class="pill pill-high-t" x="701" y="159" text-anchor="middle">high</text>
+  <rect x="750" y="145" width="60" height="20" rx="10" class="pill-blocked"/>
+  <text class="pill pill-blocked-t" x="780" y="159" text-anchor="middle">Blocked</text>
+
+  <!-- row 3: Revenue lost to churn -->
+  <rect x="20" y="186" width="810" height="66" class="row-a"/>
+  <line x1="20" y1="186" x2="830" y2="186" class="border"/>
+  <text class="cell-text" x="30" y="215">Revenue lost to</text>
+  <text class="cell-text" x="30" y="230">churn</text>
+  <text class="cell-muted" x="150" y="223">—</text>
+  <text class="cell-text" x="240" y="207">Subscription revenue</text>
+  <text class="cell-text" x="240" y="222">from users who churned</text>
+  <text class="cell-text" x="240" y="237">this month</text>
+  <text class="cell-muted" x="400" y="215">— (ambiguous, see</text>
+  <text class="cell-muted" x="400" y="230">below)</text>
+  <text class="cell-muted" x="570" y="223">—</text>
+  <rect x="663" y="211" width="76" height="20" rx="10" class="pill-medium"/>
+  <text class="pill pill-medium-t" x="701" y="225" text-anchor="middle">medium</text>
+  <rect x="745" y="211" width="70" height="20" rx="10" class="pill-ambiguous"/>
+  <text class="pill pill-ambiguous-t" x="780" y="225" text-anchor="middle">Ambiguous</text>
+
+  <!-- row 4: Marketing ROI -->
+  <rect x="20" y="252" width="810" height="66" class="row-b"/>
+  <line x1="20" y1="252" x2="830" y2="252" class="border"/>
+  <text class="cell-text" x="30" y="289">Marketing ROI</text>
+  <text class="cell-muted" x="150" y="289">—</text>
+  <text class="cell-text" x="240" y="281">How efficient our</text>
+  <text class="cell-text" x="240" y="296">marketing spend is</text>
+  <text class="cell-muted" x="400" y="281">— (blocked, see</text>
+  <text class="cell-muted" x="400" y="296">below)</text>
+  <text class="cell-muted" x="570" y="289">—</text>
+  <rect x="663" y="277" width="76" height="20" rx="10" class="pill-medium"/>
+  <text class="pill pill-medium-t" x="701" y="291" text-anchor="middle">medium</text>
+  <rect x="750" y="277" width="60" height="20" rx="10" class="pill-blocked"/>
+  <text class="pill pill-blocked-t" x="780" y="291" text-anchor="middle">Blocked</text>
+</svg>
