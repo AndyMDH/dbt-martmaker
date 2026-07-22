@@ -1,10 +1,17 @@
-# dbt-martsmith
+<div align="center">
+  <img src="assets/logo.svg" alt="dbt-martsmith" width="420">
+</div>
 
-Turn a metric requirements sheet into a draft dbt mart model
-(`dim_`/`fct_`/`rpt_`), grounded against models that already exist in your
-project. Draft-only — never commits, never runs `dbt build`/`run`/`test`.
+<p align="center">
+  Turn a metric requirements sheet into a draft dbt mart model
+  (<code>dim_</code>/<code>fct_</code>/<code>rpt_</code>), grounded against
+  models that already exist in your project. Draft-only — never commits,
+  never runs <code>dbt build</code>/<code>run</code>/<code>test</code>.
+</p>
 
-![workflow](examples/workflow.svg)
+<p align="center">
+  <img src="examples/workflow.svg" alt="workflow" width="720">
+</p>
 
 ## How it works
 
