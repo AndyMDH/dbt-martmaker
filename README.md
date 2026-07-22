@@ -3,8 +3,11 @@
 </div>
 
 <p align="center">
-  Draft dbt mart models from a metric sheet — grounded in what already
-  exists, never guessed. It's just a Claude Code skill.
+  Describe the metrics you need in plain language — dbt-martsmith checks
+  what already exists in your dbt project and drafts a mart model for you
+  to review. It's an <b>agent skill</b>: instructions your AI coding
+  assistant (Claude Code, etc.) follows directly, not a program you install
+  or a server you run.
 </p>
 
 <p align="center">
@@ -44,6 +47,18 @@ into `models/marts/` yourself.
 [Example sheet](examples/churn-metrics.csv) ·
 [Sample output](examples/proposal.md) ·
 [Meeting checklist](docs/requirements-meeting-checklist.md)
+
+## Repo layout
+
+| Path | What it is |
+|---|---|
+| `skills/dbt-martsmith/AGENTS.md` | The actual spec — every step the skill follows, in full |
+| `skills/dbt-martsmith/SKILL.md`, `CLAUDE.md` | One-line imports of `AGENTS.md`, so different agent tools can discover it |
+| `skills/dbt-martsmith/scripts/` | The deterministic parts: grounding + naming-convention detection |
+| `examples/` | A filled-in sheet, sample output, and the workflow diagram |
+| `docs/` | The requirements-meeting checklist |
+| `tests/` | pytest suite for `scripts/` (the skill's own logic is verified by running it, not unit tested) |
+| `install.sh` | Copies `skills/dbt-martsmith/` into your agent's skill folder |
 
 ## License
 
