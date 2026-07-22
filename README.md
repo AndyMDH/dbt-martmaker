@@ -25,11 +25,12 @@ agent that reads Claude Code skills or `AGENTS.md`.
 
 ## Usage
 
-`cd` into your dbt project and ask your agent:
+**First time:** `cd` into your dbt project and ask your agent:
 
 > Set up a dbt-martsmith metric sheet for churn metrics, then run it.
 
-The sheet is meant for the stakeholder to fill out, one row per metric:
+It scaffolds `.dbt-martsmith/sheets/churn-metrics.csv` — one row per metric,
+filled in with you (the stakeholder's own words, not SQL):
 
 | Column | Required | Example |
 |---|---|---|
@@ -39,13 +40,15 @@ The sheet is meant for the stakeholder to fill out, one row per metric:
 | `source_tables` | yes | payments |
 | `importance` | yes (`low`/`medium`/`high`) | low |
 
-Every source gets checked against `target/manifest.json` — **matched**,
-**ambiguous**, or **blocked**, never guessed. The skill **stops and shows
-you a proposal first** (a summary table: metric, column used, description,
-calculation, importance, status) — nothing gets built until you approve
-it. Only then does it write draft SQL/schema.yml into `.dbt-martsmith/drafts/`,
-with test rigor scaled to each metric's `importance`, for you to review and
-promote into `models/marts/` yourself.
+**Every time after:** edit that sheet, or ask for a new one, and tell your
+agent to run it.
+
+**Under the hood:** each source is checked against `target/manifest.json` —
+**matched**, **ambiguous**, or **blocked**, never guessed. The skill then
+**stops and shows you a proposal** (summary table + per-metric detail) —
+nothing is built until you approve it. Once approved, draft SQL/schema.yml
+land in `.dbt-martsmith/drafts/`, tests scaled to each metric's
+`importance`, for you to review and promote into `models/marts/` yourself.
 
 [Example sheet](examples/churn-metrics.csv) ·
 [Sample output](examples/proposal.md)
