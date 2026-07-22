@@ -20,33 +20,28 @@ project. Draft-only — never commits, never runs `dbt build`/`run`/`test`.
 Only builds from what's already staged (`models/staging`/`models/intermediate`).
 A metric needing genuinely new source data comes back **blocked**, not guessed.
 
-## Install
+## Install (one time)
 
-Requires: a dbt project with `target/manifest.json` (run `dbt parse` once),
+Requires a dbt project with `target/manifest.json` (run `dbt parse` once),
 and an AI agent that reads Claude Code skills or `AGENTS.md`.
 
 ```bash
-git clone https://github.com/AndyMDH/dbt-martsmith.git
-cd dbt-martsmith
-./install.sh              # ~/.claude/skills/dbt-martsmith (global)
-# or: ./install.sh --project
+git clone https://github.com/AndyMDH/dbt-martsmith.git && ./dbt-martsmith/install.sh
 ```
 
 ## Usage
 
-```bash
-cd your-dbt-project
-mkdir -p .dbt-martsmith/sheets
-cp ~/.claude/skills/dbt-martsmith/templates/metric_sheet.csv.tmpl \
-   .dbt-martsmith/sheets/churn-metrics.csv
-# fill in your metrics
-```
+`cd` into your dbt project and just ask your agent:
 
-Then ask your agent: *"Run dbt-martsmith on
-.dbt-martsmith/sheets/churn-metrics.csv"*
+> Set up a dbt-martsmith metric sheet for churn metrics, then run it.
 
-Output lands in `.dbt-martsmith/drafts/churn-metrics/`. Nothing is committed
-or built automatically — review, resolve open questions, then promote the
+The agent scaffolds the sheet with you, fills it in from the conversation,
+grounds it, and writes the proposal + draft models — no manual file
+juggling needed. Already have a sheet? *"Run dbt-martsmith on
+.dbt-martsmith/sheets/churn-metrics.csv"* works too.
+
+Output lands in `.dbt-martsmith/drafts/<name>/`. Nothing is committed or
+built automatically — review, resolve open questions, then promote the
 draft files into `models/marts/` yourself.
 
 See [`docs/requirements-meeting-checklist.md`](docs/requirements-meeting-checklist.md)

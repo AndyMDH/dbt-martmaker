@@ -1,60 +1,78 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 220" font-family="Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" font-family="Helvetica, Arial, sans-serif">
   <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#555"/>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#57606a"/>
     </marker>
   </defs>
 
   <style>
-    .box { fill: #f6f8fa; stroke: #555; stroke-width: 1.5; }
-    .title { font-size: 13px; font-weight: 600; fill: #111; }
-    .sub { font-size: 11px; fill: #444; }
-    .arrow { stroke: #555; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
-    .note { font-size: 10px; fill: #666; font-style: italic; }
+    .box { fill: #f6f8fa; stroke: #57606a; stroke-width: 1.5; }
+    .final { fill: #ddf4ff; stroke: #0969da; stroke-width: 1.5; }
+    .matched { fill: #dafbe1; stroke: #1a7f37; }
+    .ambiguous { fill: #fff8c5; stroke: #9a6700; }
+    .blocked { fill: #ffebe9; stroke: #cf222e; }
+    .title { font-size: 16px; font-weight: 600; fill: #1f2328; }
+    .sub { font-size: 12px; fill: #57606a; }
+    .small-title { font-size: 13px; font-weight: 600; }
+    .small-sub { font-size: 10px; fill: #57606a; }
+    .arrow { stroke: #57606a; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+    .note { font-size: 11px; fill: #57606a; font-style: italic; }
   </style>
 
   <!-- 1: metric sheet -->
-  <rect class="box" x="10" y="60" width="170" height="70" rx="6"/>
-  <text class="title" x="95" y="90" text-anchor="middle">metric sheet</text>
-  <text class="sub" x="95" y="108" text-anchor="middle">.csv</text>
+  <rect class="box" x="80" y="20" width="480" height="64" rx="8"/>
+  <text class="title" x="320" y="48" text-anchor="middle">Metric sheet (.csv)</text>
+  <text class="sub" x="320" y="68" text-anchor="middle">metric, definition, calculation, source table(s) — you or your agent fills it in</text>
 
-  <!-- arrow 1->2 -->
-  <line class="arrow" x1="180" y1="95" x2="218" y2="95"/>
+  <line class="arrow" x1="320" y1="84" x2="320" y2="114"/>
 
-  <!-- 2: cli run -->
-  <rect class="box" x="220" y="60" width="180" height="70" rx="6"/>
-  <text class="title" x="310" y="85" text-anchor="middle">dbt-martsmith run</text>
-  <text class="sub" x="310" y="103" text-anchor="middle">grounds vs.</text>
-  <text class="sub" x="310" y="117" text-anchor="middle">target/manifest.json</text>
+  <!-- 2: ask agent -->
+  <rect class="box" x="80" y="116" width="480" height="64" rx="8"/>
+  <text class="title" x="320" y="144" text-anchor="middle">Ask your agent to run dbt-martsmith</text>
+  <text class="sub" x="320" y="164" text-anchor="middle">one sentence — no manual file setup needed</text>
 
-  <!-- arrow 2->3 -->
-  <line class="arrow" x1="400" y1="95" x2="438" y2="95"/>
+  <line class="arrow" x1="320" y1="180" x2="320" y2="210"/>
 
-  <!-- 3: proposal -->
-  <rect class="box" x="440" y="60" width="180" height="70" rx="6"/>
-  <text class="title" x="530" y="85" text-anchor="middle">proposal.md</text>
-  <text class="sub" x="530" y="103" text-anchor="middle">matched / ambiguous /</text>
-  <text class="sub" x="530" y="117" text-anchor="middle">blocked, per row</text>
+  <!-- 3: grounding -->
+  <rect class="box" x="80" y="212" width="480" height="64" rx="8"/>
+  <text class="title" x="320" y="240" text-anchor="middle">Checks target/manifest.json</text>
+  <text class="sub" x="320" y="260" text-anchor="middle">does a matching model already exist? never a guess</text>
 
-  <!-- arrow 3->4 -->
-  <line class="arrow" x1="620" y1="95" x2="658" y2="95"/>
-  <text class="note" x="639" y="50" text-anchor="middle">matched rows</text>
-  <text class="note" x="639" y="145" text-anchor="middle">only</text>
+  <!-- branch arrows to 3 outcomes -->
+  <line class="arrow" x1="200" y1="276" x2="140" y2="306"/>
+  <line class="arrow" x1="320" y1="276" x2="320" y2="306"/>
+  <line class="arrow" x1="440" y1="276" x2="500" y2="306"/>
 
-  <!-- 4: draft files -->
-  <rect class="box" x="660" y="60" width="180" height="70" rx="6"/>
-  <text class="title" x="750" y="85" text-anchor="middle">draft SQL +</text>
-  <text class="title" x="750" y="102" text-anchor="middle">schema.yml</text>
-  <text class="sub" x="750" y="118" text-anchor="middle">draft__ prefixed</text>
+  <!-- outcome boxes -->
+  <rect class="box matched" x="60" y="308" width="160" height="56" rx="8"/>
+  <text class="small-title" x="140" y="332" text-anchor="middle" fill="#1a7f37">Matched</text>
+  <text class="small-sub" x="140" y="350" text-anchor="middle">confident hit</text>
 
-  <!-- arrow 4->5 -->
-  <line class="arrow" x1="840" y1="95" x2="878" y2="95"/>
+  <rect class="box ambiguous" x="240" y="308" width="160" height="56" rx="8"/>
+  <text class="small-title" x="320" y="332" text-anchor="middle" fill="#9a6700">Ambiguous</text>
+  <text class="small-sub" x="320" y="350" text-anchor="middle">short candidate list</text>
+
+  <rect class="box blocked" x="420" y="308" width="160" height="56" rx="8"/>
+  <text class="small-title" x="500" y="332" text-anchor="middle" fill="#cf222e">Blocked</text>
+  <text class="small-sub" x="500" y="350" text-anchor="middle">nothing found</text>
+
+  <!-- converge arrows -->
+  <line class="arrow" x1="140" y1="364" x2="280" y2="404"/>
+  <line class="arrow" x1="320" y1="364" x2="320" y2="404"/>
+  <line class="arrow" x1="500" y1="364" x2="360" y2="404"/>
+
+  <!-- 4: proposal + drafts -->
+  <rect class="box" x="80" y="406" width="480" height="74" rx="8"/>
+  <text class="title" x="320" y="434" text-anchor="middle">proposal.md + draft SQL / schema.yml</text>
+  <text class="sub" x="320" y="454" text-anchor="middle">one section per metric, written into an untracked draft folder</text>
+  <text class="sub" x="320" y="470" text-anchor="middle">only for matched rows — nothing is invented for the rest</text>
+
+  <line class="arrow" x1="320" y1="480" x2="320" y2="510"/>
 
   <!-- 5: human review -->
-  <rect class="box" x="880" y="55" width="150" height="80" rx="6"/>
-  <text class="title" x="955" y="80" text-anchor="middle">you review</text>
-  <text class="title" x="955" y="97" text-anchor="middle">&amp; promote</text>
-  <text class="sub" x="955" y="115" text-anchor="middle">into models/marts/</text>
+  <rect class="box final" x="80" y="512" width="480" height="74" rx="8"/>
+  <text class="title" x="320" y="542" text-anchor="middle" fill="#0969da">You review &amp; promote</text>
+  <text class="sub" x="320" y="562" text-anchor="middle">rename off draft__, move into models/marts/, run dbt parse</text>
 
-  <text class="note" x="520" y="20" text-anchor="middle" font-size="12">nothing is committed or built automatically at any step</text>
+  <text class="note" x="320" y="614" text-anchor="middle">nothing is committed or built automatically at any step</text>
 </svg>

@@ -9,19 +9,19 @@ naming_convention_detected_from: dbt-bouncer.yml
 
 ## Payment count
 - Definition: Number of payments processed
-- Calculation: count(payment_id)
+- Calculation: just a count of payments
 - Grounding: matched `stg_payments` (models/staging/stripe/stg_payments.sql) — confirmed via manifest, score 1.0
 - Status: Matched
 
 ## Monthly churned users
 - Definition: Active in last 30 days then inactive
-- Calculation: count(distinct user_id) where last_active_date < current_date - 30
+- Calculation: count of users who stopped logging in over the last month
 - Grounding: blocked — no matching staging/intermediate model found for "user_events"
 - Status: Blocked
 
 ## Revenue lost to churn
 - Definition: Subscription revenue from users who churned this month
-- Calculation: sum(subscription_value) where churned = true
+- Calculation: total subscription revenue from people who churned this month
 - Grounding: ambiguous for "subscriptions" — candidates: `stg_billing__subscriptions`, `int_billing__subscription_history`
 - Status: Ambiguous
 
