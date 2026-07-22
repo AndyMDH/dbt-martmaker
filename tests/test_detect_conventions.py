@@ -1,4 +1,4 @@
-import detect_conventions
+from dbt_martsmith import detect_conventions
 
 
 def test_naming_from_bouncer_takes_precedence(dbt_project):

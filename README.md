@@ -2,52 +2,42 @@
 
 Turn a metric requirements sheet into a draft dbt mart model
 (`dim_`/`fct_`/`rpt_`), grounded against models that already exist in your
-project. Draft-only — never commits, never runs `dbt build`/`run`/`test`.
+project. A plain CLI — no LLM, no agent, fully deterministic.
 
-## How it works
-
-1. Fill out a small CSV: one row per metric — **metric, definition,
-   calculation, source table(s)**.
-2. It checks each source against your project's `target/manifest.json`.
-   Outcome is always one of: matched, ambiguous (short candidate list), or
-   blocked (nothing found) — never a guess.
-3. It writes a proposal (`proposal.md`) plus skeleton mart SQL/schema.yml
-   into an untracked draft folder, for you to review and promote yourself.
-
-Only builds from what's already staged (`models/staging`/`models/intermediate`).
-A metric needing genuinely new source data comes back **blocked**, not guessed.
-
-Have a transcript instead of a filled sheet? Ask your agent to draft a
-candidate sheet from it — you still review and confirm before anything builds.
+![workflow](examples/workflow.svg)
 
 ## Install
 
-Requires: a dbt project with `target/manifest.json` (run `dbt parse` once),
-and an AI agent that reads Claude Code skills or `AGENTS.md`.
+Requires a dbt project with `target/manifest.json` present (run `dbt parse`
+once).
 
 ```bash
-git clone https://github.com/AndyMDH/dbt-martsmith.git
-cd dbt-martsmith
-./install.sh              # ~/.claude/skills/dbt-martsmith (global)
-# or: ./install.sh --project
+pip install git+https://github.com/AndyMDH/dbt-martsmith.git
 ```
 
 ## Usage
 
 ```bash
 cd your-dbt-project
-mkdir -p .dbt-martsmith/sheets
-cp ~/.claude/skills/dbt-martsmith/templates/metric_sheet.csv.tmpl \
-   .dbt-martsmith/sheets/churn-metrics.csv
-# fill in your metrics
+dbt-martsmith init churn-metrics
+# fill in .dbt-martsmith/sheets/churn-metrics.csv — see examples/churn-metrics.csv
+dbt-martsmith run .dbt-martsmith/sheets/churn-metrics.csv
 ```
 
-Then ask your agent: *"Run dbt-martsmith on
-.dbt-martsmith/sheets/churn-metrics.csv"*
+Each row is checked against your project's `target/manifest.json`. Outcome
+is always one of: **matched**, **ambiguous** (short candidate list), or
+**blocked** (nothing found) — never a guess.
 
-Output lands in `.dbt-martsmith/drafts/churn-metrics/`. Nothing is committed
-or built automatically — review, resolve open questions, then promote the
-draft files into `models/marts/` yourself.
+Output lands in `.dbt-martsmith/drafts/churn-metrics/`:
+- `proposal.md` — one section per metric, grounding result, open questions.
+  See [`examples/proposal.md`](examples/proposal.md) for a sample.
+- `models/draft__*.sql` + `.yml` — skeleton mart files, matched rows only.
+
+Nothing is committed or run automatically. Review the proposal, resolve
+open questions, then promote the draft files into `models/marts/` yourself.
+
+Only builds from what's already staged (`models/staging`/`models/intermediate`).
+A metric needing genuinely new source data comes back **blocked**, not guessed.
 
 See [`docs/requirements-meeting-checklist.md`](docs/requirements-meeting-checklist.md)
 for what makes a good Definition/Calculation entry.

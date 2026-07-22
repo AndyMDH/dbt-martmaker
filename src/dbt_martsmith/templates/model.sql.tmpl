@@ -1,0 +1,24 @@
+-- DBT-MARTSMITH DRAFT
+-- Generated from %%SHEET_NAME%% on %%GENERATED_AT%%. Not part of the dbt DAG
+-- until a human reviews this, drops the draft__ prefix, and moves it into
+-- models/marts/. Do not run `dbt build` against this file in place.
+--
+-- Metric: %%METRIC%%
+-- Definition: %%DEFINITION%%
+-- Calculation: %%CALCULATION%%
+
+with
+
+source_model as (
+    select * from {{ ref('%%MATCHED_MODEL%%') }}
+),
+
+final as (
+    select
+        -- TODO: write the actual select list / aggregation for the
+        -- calculation above -- this skeleton is not runnable as-is.
+        *
+    from source_model
+)
+
+select * from final
