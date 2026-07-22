@@ -101,8 +101,16 @@ extracted candidate reference(s), your proposed calculation, and importance
 Run `scripts/detect_conventions.py <project_root>`. It returns the naming
 pattern for `models/marts` (from `dbt-bouncer.yml` if present, else sampled
 from existing filenames), the materialization default for marts (from
-`dbt_project.yml`), and the property-file naming pattern sampled from
-whichever marts subdirectory already has files in it.
+`dbt_project.yml`), the property-file naming pattern sampled from whichever
+marts subdirectory already has files in it, and `existing_tests`: every
+generic test already used anywhere in the project's manifest, split into
+`builtin` (`not_null`/`unique`/`accepted_values`/`relationships`),
+`package` (e.g. a `dbt_expectations` or `dbt_utils` test, with namespace),
+and `custom` (a project-defined generic test with no namespace that isn't
+one of the 4 built-ins — e.g. a `not_negative` test). Use this in Step 5:
+if an existing custom or package test already fits what a metric's
+`reasoning` implies, propose reusing *that* instead of reaching for a
+generic default — it's what the project's own convention already is.
 
 If the marts folder is empty and nothing can be sampled, do not invent a
 convention — note it as an open question in the proposal instead
@@ -187,18 +195,25 @@ Only for rows that ended up Matched or resolved-Ambiguous. For each:
     or lightly cleaned up.
   - `meta: {source_sheet: <slug>.csv, requested_by: <if known>,
     date: <today, ISO 8601>}`.
-  - Tests calibrated by the row's `importance`:
+  - Tests calibrated by the row's `importance`, and **checked against
+    `existing_tests` from Step 2 before picking one**:
     - **high**: `not_null` on the columns your proposed calculation clearly
       depends on, `accepted_values` if the reasoning implies an enumerable
       set, and a `freshness:` block if any timeliness requirement was
-      stated. Note in the proposal that a contract may be worth
-      considering.
+      stated. If a value must be positive/non-negative/within a range and
+      the project already has a custom or package test for that (like
+      `not_negative`), propose that instead of a generic substitute. Note
+      in the proposal that a contract may be worth considering.
     - **medium**: `not_null` only on a column the reasoning *explicitly*
-      says can't be null (e.g. "revenue can't be null") — never inferred
-      speculatively.
+      says can't be null (e.g. "revenue can't be null") — same
+      existing-test-first check as above, never inferred speculatively.
     - **low**: description only, no drafted tests — leave a comment
       inviting the human to add tests themselves if they turn out to
       matter more than the sheet suggested.
+  - Never introduce a new package dependency (e.g. `dbt_expectations`) the
+    project doesn't already use just to get a slightly better test — reuse
+    what's in `existing_tests`, or fall back to a built-in, rather than
+    proposing a new dependency as a side effect of one metric.
   - Never invent a test that isn't grounded in something the reasoning
     actually said, regardless of importance — `high` raises how hard you
     look for explicit signals in the text, it doesn't license guessing.

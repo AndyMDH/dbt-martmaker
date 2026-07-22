@@ -89,3 +89,57 @@ def test_materialization_none_when_not_configured(dbt_project):
     project_root = dbt_project({})
     result = detect_conventions.detect_materialization(project_root)
     assert result is None
+
+
+def _test_node(unique_id: str, name: str, namespace=None, has_metadata: bool = True) -> dict:
+    node = {"resource_type": "test", "name": f"{name}_test"}
+    if has_metadata:
+        node["test_metadata"] = {"name": name, "namespace": namespace, "kwargs": {}}
+    return {unique_id: node}
+
+
+def test_existing_tests_classifies_builtin_package_and_custom(dbt_project):
+    """Regression guard for the real shape found in dbt_template's manifest:
+    built-in tests have no namespace, package tests (dbt_expectations,
+    dbt_utils) carry one, and a project's own custom generic test (e.g.
+    not_negative) has no namespace but also isn't one of dbt's 4 built-ins."""
+    nodes = {}
+    nodes.update(_test_node("test.p.not_null_a", "not_null"))
+    nodes.update(_test_node("test.p.not_null_b", "not_null"))
+    nodes.update(_test_node("test.p.unique_a", "unique"))
+    nodes.update(_test_node("test.p.expect_a", "expect_table_row_count_to_be_between", namespace="dbt_expectations"))
+    nodes.update(_test_node("test.p.custom_a", "not_negative"))
+    nodes.update(_test_node("test.p.custom_b", "not_negative"))
+    project_root = dbt_project(nodes)
+
+    result = detect_conventions.detect_existing_tests(project_root)
+
+    assert result["builtin"] == {"not_null": 2, "unique": 1}
+    assert result["package"] == [
+        {"namespace": "dbt_expectations", "name": "expect_table_row_count_to_be_between", "count": 1}
+    ]
+    assert result["custom"] == [{"name": "not_negative", "count": 2}]
+
+
+def test_existing_tests_ignores_singular_tests(dbt_project):
+    """Singular tests (raw SQL, no test_metadata) aren't generic tests and
+    shouldn't be treated as an existing generic-test convention."""
+    nodes = {}
+    nodes.update(_test_node("test.p.singular_a", "some_singular_test", has_metadata=False))
+    project_root = dbt_project(nodes)
+
+    result = detect_conventions.detect_existing_tests(project_root)
+
+    assert result["builtin"] == {}
+    assert result["package"] == []
+    assert result["custom"] == []
+
+
+def test_existing_tests_none_when_no_manifest(dbt_project):
+    project_root = dbt_project({})
+    (project_root / "target" / "manifest.json").unlink()
+
+    result = detect_conventions.detect_existing_tests(project_root)
+
+    assert result["builtin"] == {}
+    assert "no target/manifest.json" in result["source"]

@@ -18,6 +18,10 @@ models:
     # AGENTS.md Step 5): high -> not_null + accepted_values + freshness
     # where the reasoning text supports it; medium -> not_null only where
     # the reasoning explicitly requires it; low -> description only, no
-    # drafted tests.
+    # drafted tests. Before picking a test, check `existing_tests` from
+    # detect_conventions.py -- reuse a project's own custom/package test
+    # (e.g. a `not_negative` test already used elsewhere) rather than a
+    # generic substitute, and never introduce a new package dependency
+    # the project doesn't already use.
     # freshness: only if the sheet's reasoning explicitly stated a
     # refresh/timeliness requirement -- otherwise omit this block entirely.

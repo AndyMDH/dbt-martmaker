@@ -54,14 +54,17 @@ which you then approve or correct.
 1. Parses the sheet, reading `reasoning` for candidate tables/columns and a
    rough shape of the calculation.
 2. Detects your project's naming/materialization conventions
-   (`dbt-bouncer.yml`, or sampled from existing marts).
+   (`dbt-bouncer.yml`, or sampled from existing marts) and surveys generic
+   tests already in use — built-in, package, and custom — so it can reuse
+   your project's own conventions instead of a generic default.
 3. Grounds each candidate against `target/manifest.json` — **matched**,
    **ambiguous**, or **blocked**, never guessed.
 4. Writes a proposal (summary table + per-metric detail, `reasoning` shown
-   verbatim next to its own proposed/inferred calculation) and **stops for
-   your approval** — nothing is built yet.
+   verbatim next to its own proposed calculation and tests) and **stops
+   for your approval** — nothing is built yet.
 5. Once approved: writes draft SQL/schema.yml into `.dbt-martsmith/drafts/`,
-   tests scaled to each metric's `importance`.
+   tests scaled to each metric's `importance` and reusing an existing
+   custom/package test where one already fits.
 6. You review, then promote the drafts into `models/marts/` yourself.
 
 ## License

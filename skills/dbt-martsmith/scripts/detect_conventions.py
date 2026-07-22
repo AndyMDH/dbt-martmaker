@@ -110,6 +110,62 @@ def detect_materialization(project_root: Path) -> dict | None:
     return None
 
 
+BUILTIN_GENERIC_TESTS = {"not_null", "unique", "accepted_values", "relationships"}
+
+
+def detect_existing_tests(project_root: Path) -> dict:
+    """
+    Survey generic tests already used in this project's manifest, so a new
+    test doesn't get drafted from a generic/package default when the
+    project has its own established convention (e.g. a custom
+    `not_negative` test already used on similar columns elsewhere) --
+    never invents a new custom test macro, only surfaces what's already
+    real and in use.
+    """
+    manifest_path = project_root / "target" / "manifest.json"
+    if not manifest_path.exists():
+        return {
+            "builtin": {},
+            "package": [],
+            "custom": [],
+            "source": "none -- no target/manifest.json found",
+        }
+
+    with manifest_path.open() as f:
+        manifest = json.load(f)
+
+    builtin_counts = Counter()
+    package_counts = Counter()
+    custom_counts = Counter()
+
+    for node in manifest.get("nodes", {}).values():
+        if node.get("resource_type") != "test":
+            continue
+        test_metadata = node.get("test_metadata")
+        if not test_metadata:
+            continue  # singular test (raw SQL), no generic test name to compare
+        name = test_metadata.get("name")
+        namespace = test_metadata.get("namespace")
+        if namespace:
+            package_counts[(namespace, name)] += 1
+        elif name in BUILTIN_GENERIC_TESTS:
+            builtin_counts[name] += 1
+        else:
+            custom_counts[name] += 1
+
+    return {
+        "builtin": dict(builtin_counts),
+        "package": [
+            {"namespace": ns, "name": name, "count": count}
+            for (ns, name), count in package_counts.most_common()
+        ],
+        "custom": [
+            {"name": name, "count": count} for name, count in custom_counts.most_common()
+        ],
+        "source": "target/manifest.json",
+    }
+
+
 def main() -> None:
     if len(sys.argv) != 2:
         print(json.dumps({"error": "bad_args", "message": "Usage: detect_conventions.py <project_root>"}))
@@ -130,11 +186,13 @@ def main() -> None:
     naming = detect_naming_from_bouncer(project_root) or sample_naming_from_files(project_root)
     property_files = sample_property_file_pattern(project_root)
     materialization = detect_materialization(project_root)
+    existing_tests = detect_existing_tests(project_root)
 
     result = {
         "naming": naming or {"pattern": None, "source": "none -- marts folder empty or missing, do not guess"},
         "property_files": property_files or {"per_directory_samples": {}, "source": "none -- no existing marts property files to sample"},
         "materialization": materialization or {"materialized": None, "source": "none -- fall back to dbt's own default"},
+        "existing_tests": existing_tests,
     }
     print(json.dumps(result, indent=2))
 
