@@ -19,23 +19,12 @@ never attempt it.
 
 ## Input: the metric sheet
 
-The only input this skill acts on is a **confirmed** metric sheet at
+The only input this skill acts on is a metric sheet at
 `.dbt-martsmith/sheets/<slug>.csv`, with columns: `metric`, `definition`,
-`calculation`, `source_tables`. A sheet is "confirmed" if it does not have a
-`.draft.csv` extension — a `.draft.csv` file is a candidate a human hasn't
-reviewed yet.
-
-**If asked to run against a `.draft.csv` file: refuse.** Print: `ERROR:
-<file> is an unconfirmed draft sheet — review it, correct it, and rename to
-<slug>.csv before running dbt-martsmith on it.` Do not proceed, do not read its
-rows for grounding.
-
-**If asked to draft a sheet from a transcript** (a separate, optional
-request — not the main flow): read the transcript, extract candidate
-metric/definition/calculation/source rows, write them to
-`.dbt-martsmith/sheets/<slug>.draft.csv` using `templates/metric_sheet.csv.tmpl`
-as the header, and stop. Tell the user exactly what to review and that nothing
-was built. Never skip straight from a transcript to a build.
+`calculation`, `source_tables`. The user fills this in themselves (or asks
+you to help draft one directly, in the same conversation, before running the
+skill on it) — either way, treat what's in the file as the actual input once
+you're asked to run against it.
 
 ## Idempotency guard
 
@@ -51,13 +40,9 @@ found; that's the project root. If none is found within a reasonable number
 of parent directories, **ERROR**: `No dbt_project.yml found — dbt-martsmith
 must be run from inside a dbt project.` Stop; do not guess a root.
 
-Compute a checksum (e.g. sha256) of the confirmed sheet's contents.
+Compute a checksum (e.g. sha256) of the sheet's contents.
 
-Derive `<slug>` from the sheet's filename (without extension) if invoking
-against an existing sheet; when drafting a new sheet from a transcript,
-derive it the same way `meeting-enricher` would: a date prefix in the
-transcript's filename, else a date mentioned in the transcript, else the
-file's mtime, plus a short kebab-case label.
+Derive `<slug>` from the sheet's filename (without extension).
 
 ## Step 1 — Parse sheet rows
 
@@ -182,7 +167,6 @@ committed or built.
 - Never call a dbt command that mutates a warehouse (`build`/`run`/`test`/
   `seed`/`snapshot`) — only read-only introspection.
 - Never invent a `ref()`/model match that `ground.py` didn't confirm.
-- Never proceed past a `.draft.csv` without human confirmation.
 - If `.dbt-martsmith/` isn't already in the project's `.gitignore`, mention it
   in the summary as a suggestion — do not edit `.gitignore` yourself.
 - Process one metric sheet fully before starting another if asked to handle

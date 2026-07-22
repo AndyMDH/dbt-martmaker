@@ -4,21 +4,21 @@ Turn a metric requirements sheet into a draft dbt mart model
 (`dim_`/`fct_`/`rpt_`), grounded against models that already exist in your
 project. Draft-only — never commits, never runs `dbt build`/`run`/`test`.
 
+![workflow](examples/workflow.svg)
+
 ## How it works
 
 1. Fill out a small CSV: one row per metric — **metric, definition,
-   calculation, source table(s)**.
+   calculation, source table(s)**. See [`examples/churn-metrics.csv`](examples/churn-metrics.csv).
 2. It checks each source against your project's `target/manifest.json`.
    Outcome is always one of: matched, ambiguous (short candidate list), or
    blocked (nothing found) — never a guess.
 3. It writes a proposal (`proposal.md`) plus skeleton mart SQL/schema.yml
    into an untracked draft folder, for you to review and promote yourself.
+   See [`examples/proposal.md`](examples/proposal.md) for a sample.
 
 Only builds from what's already staged (`models/staging`/`models/intermediate`).
 A metric needing genuinely new source data comes back **blocked**, not guessed.
-
-Have a transcript instead of a filled sheet? Ask your agent to draft a
-candidate sheet from it — you still review and confirm before anything builds.
 
 ## Install
 
