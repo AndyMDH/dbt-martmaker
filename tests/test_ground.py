@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from dbt_martsmith import ground
+import ground
 from conftest import make_model
 
 

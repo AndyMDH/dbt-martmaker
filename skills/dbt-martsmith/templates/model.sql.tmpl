@@ -1,0 +1,22 @@
+-- DBT-MARTSMITH DRAFT
+-- Generated from <slug>.csv on <ISO8601>. Not part of the dbt DAG until a
+-- human reviews this, drops the draft__ prefix, and moves it into
+-- models/marts/. Do not run `dbt build` against this file in place.
+--
+-- Metric: <metric name>
+-- Definition: <definition column, verbatim from the sheet>
+
+with
+
+<staging_or_intermediate_ref> as (
+    select * from {{ ref('<matched_model_name>') }}
+),
+
+final as (
+    select
+        -- TODO: columns implied by the calculation column go here
+        *
+    from <staging_or_intermediate_ref>
+)
+
+select * from final

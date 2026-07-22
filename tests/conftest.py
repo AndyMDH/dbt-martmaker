@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-SRC_DIR = Path(__file__).parent.parent / "src"
-sys.path.insert(0, str(SRC_DIR))
+SCRIPTS_DIR = Path(__file__).parent.parent / "skills" / "dbt-martsmith" / "scripts"
+sys.path.insert(0, str(SCRIPTS_DIR))
 
 
 def make_model(name: str, layer: str, description: str = "", columns=None, group: str = "jaffle_shop") -> dict:

@@ -1,4 +1,0 @@
-metric,definition,calculation,source_tables
-Payment count,Number of payments processed,count(payment_id),payments
-Monthly churned users,Active in last 30 days then inactive,count(distinct user_id) where last_active_date < current_date - 30,user_events
-Revenue lost to churn,Subscription revenue from users who churned this month,sum(subscription_value) where churned = true,subscriptions
