@@ -25,12 +25,16 @@ agent that reads Claude Code skills or `AGENTS.md`.
 
 ## Usage
 
-**First time:** `cd` into your dbt project and ask your agent:
+**First time setup:** `cd` into your dbt project and ask your agent:
 
 > Set up a dbt-martsmith metric sheet for churn metrics, then run it.
 
-It scaffolds `.dbt-martsmith/sheets/churn-metrics.csv` — one row per metric,
-filled in with you (the stakeholder's own words, not SQL):
+It scaffolds `.dbt-martsmith/sheets/churn-metrics.csv` and fills it in with
+you. After that: edit that sheet, or start a new one, and tell your agent
+to run it.
+
+**Example sheet** — one row per metric, in the stakeholder's own words, not
+SQL: [`examples/churn-metrics.csv`](examples/churn-metrics.csv)
 
 | Column | Required | Example |
 |---|---|---|
@@ -40,29 +44,20 @@ filled in with you (the stakeholder's own words, not SQL):
 | `source_tables` | yes | payments |
 | `importance` | yes (`low`/`medium`/`high`) | low |
 
-**Every time after:** edit that sheet, or ask for a new one, and tell your
-agent to run it.
+**Output** — a proposal, then approved draft models:
+[`examples/proposal.md`](examples/proposal.md)
 
-**Under the hood:** each source is checked against `target/manifest.json` —
-**matched**, **ambiguous**, or **blocked**, never guessed. The skill then
-**stops and shows you a proposal** (summary table + per-metric detail) —
-nothing is built until you approve it. Once approved, draft SQL/schema.yml
-land in `.dbt-martsmith/drafts/`, tests scaled to each metric's
-`importance`, for you to review and promote into `models/marts/` yourself.
-
-[Example sheet](examples/churn-metrics.csv) ·
-[Sample output](examples/proposal.md)
-
-## Repo layout
-
-| Path | What it is |
-|---|---|
-| `skills/dbt-martsmith/AGENTS.md` | The actual spec — every step the skill follows, in full |
-| `skills/dbt-martsmith/SKILL.md`, `CLAUDE.md` | One-line imports of `AGENTS.md`, so different agent tools can discover it |
-| `skills/dbt-martsmith/scripts/` | The deterministic parts: grounding + naming-convention detection |
-| `examples/` | A filled-in sheet, sample output, and the workflow diagram |
-| `tests/` | pytest suite for `scripts/` (the skill's own logic is verified by running it, not unit tested) |
-| `install.sh` | Copies `skills/dbt-martsmith/` into your agent's skill folder |
+**Under the hood:**
+1. Parses the sheet.
+2. Detects your project's naming/materialization conventions
+   (`dbt-bouncer.yml`, or sampled from existing marts).
+3. Grounds each source against `target/manifest.json` — **matched**,
+   **ambiguous**, or **blocked**, never guessed.
+4. Writes a proposal (summary table + per-metric detail) and **stops for
+   your approval** — nothing is built yet.
+5. Once approved: writes draft SQL/schema.yml into `.dbt-martsmith/drafts/`,
+   tests scaled to each metric's `importance`.
+6. You review, then promote the drafts into `models/marts/` yourself.
 
 ## License
 
