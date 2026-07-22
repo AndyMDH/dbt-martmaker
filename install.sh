@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# Install dbt-scribe as a Claude Code / agent skill.
+# Install dbt-martsmith as a Claude Code / agent skill.
 #
 # Usage:
-#   ./install.sh                 # symlink into ~/.claude/skills/dbt-scribe (global)
-#   ./install.sh --project       # symlink into ./.claude/skills/dbt-scribe (current project only)
+#   ./install.sh                 # symlink into ~/.claude/skills/dbt-martsmith (global)
+#   ./install.sh --project       # symlink into ./.claude/skills/dbt-martsmith (current project only)
 #   ./install.sh --copy          # copy instead of symlink (won't track future `git pull` updates)
 #   ./install.sh --project --copy
 
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SRC="$REPO_DIR/skills/dbt-scribe"
+SRC="$REPO_DIR/skills/dbt-martsmith"
 
 TARGET_ROOT="$HOME/.claude/skills"
 MODE="symlink"
@@ -27,7 +27,7 @@ for arg in "$@"; do
   esac
 done
 
-DEST="$TARGET_ROOT/dbt-scribe"
+DEST="$TARGET_ROOT/dbt-martsmith"
 mkdir -p "$TARGET_ROOT"
 
 if [ -e "$DEST" ] || [ -L "$DEST" ]; then

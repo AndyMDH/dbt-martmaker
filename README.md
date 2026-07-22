@@ -1,4 +1,4 @@
-# dbt-scribe
+# dbt-martsmith
 
 Turn a structured metric requirements sheet into a draft dbt mart model
 (`dim_`/`fct_`/`rpt_`) — grounded against the models that already exist in
@@ -23,7 +23,7 @@ your project, never guessed. Draft-only: it never commits, never runs
 Extracting structure from a rambling meeting transcript is the least
 reliable part of this kind of tool — ambiguous phrasing, missing context,
 an LLM having to get every extraction step right in one pass. A structured
-sheet sidesteps that. If you do have a transcript, dbt-scribe can still
+sheet sidesteps that. If you do have a transcript, dbt-martsmith can still
 draft a *candidate* sheet from it — but that draft (`<slug>.draft.csv`) is
 never used directly. You review and confirm it (rename off `.draft`) before
 anything gets built from it. The risky step only ever produces something
@@ -34,7 +34,7 @@ low-stakes and editable.
 In a reasonably mature dbt project, staging and intermediate models already
 cover raw sources 1:1. A new business ask is almost always "combine what's
 already modeled into a new mart," not "wire up a brand-new raw source." So
-dbt-scribe only builds `dim_`/`fct_`/`rpt_` models from what's already
+dbt-martsmith only builds `dim_`/`fct_`/`rpt_` models from what's already
 staged. If a metric needs data that genuinely isn't staged anywhere yet,
 that row comes back **blocked** — flagged, not guessed at. Building new
 staging models/sources is out of scope for this tool.
@@ -50,9 +50,9 @@ Prerequisites:
   reads `AGENTS.md`/`CLAUDE.md` (Claude Code, Claude Desktop, Cursor, etc.).
 
 ```bash
-git clone https://github.com/<you>/dbt-scribe.git
-cd dbt-scribe
-./install.sh              # symlinks into ~/.claude/skills/dbt-scribe (global)
+git clone https://github.com/<you>/dbt-martsmith.git
+cd dbt-martsmith
+./install.sh              # symlinks into ~/.claude/skills/dbt-martsmith (global)
 # or: ./install.sh --project   (current project's .claude/skills/ only)
 ```
 
@@ -60,21 +60,21 @@ cd dbt-scribe
 
 ```bash
 cd your-dbt-project
-mkdir -p .dbt-scribe/sheets
-cp ~/.claude/skills/dbt-scribe/templates/metric_sheet.csv.tmpl \
-   .dbt-scribe/sheets/churn-metrics.csv
+mkdir -p .dbt-martsmith/sheets
+cp ~/.claude/skills/dbt-martsmith/templates/metric_sheet.csv.tmpl \
+   .dbt-martsmith/sheets/churn-metrics.csv
 # edit churn-metrics.csv with your actual metrics
 ```
 
-Then, in your agent: *"Run dbt-scribe on .dbt-scribe/sheets/churn-metrics.csv"*
+Then, in your agent: *"Run dbt-martsmith on .dbt-martsmith/sheets/churn-metrics.csv"*
 
-Output lands in `.dbt-scribe/drafts/churn-metrics/proposal.md` plus draft
-model files under `.dbt-scribe/drafts/churn-metrics/models/`. Nothing is
+Output lands in `.dbt-martsmith/drafts/churn-metrics/proposal.md` plus draft
+model files under `.dbt-martsmith/drafts/churn-metrics/models/`. Nothing is
 committed or built automatically — review the proposal, resolve any open
 questions, then manually promote the draft files into `models/marts/`.
 
 If you have a transcript instead of a filled sheet, ask your agent: *"Draft
-a dbt-scribe metric sheet from this transcript: <path>"* — review the
+a dbt-martsmith metric sheet from this transcript: <path>"* — review the
 resulting `.draft.csv`, correct it, rename off `.draft`, then run it as
 above.
 
@@ -100,12 +100,12 @@ the only three outcomes — never a silent guess.
 
 **Why conventions are detected, not assumed.** Naming, materialization, and
 property-file conventions differ per project — sometimes even
-inconsistently *within* one project. dbt-scribe reads your `dbt-bouncer.yml`
+inconsistently *within* one project. dbt-martsmith reads your `dbt-bouncer.yml`
 if you have one, or samples your existing marts files, rather than
 hardcoding one house style.
 
 **Why manual-trigger and draft-only.** No file watcher, no auto-commit, no
-auto-PR. Every artifact lands in an untracked `.dbt-scribe/` folder for a
+auto-PR. Every artifact lands in an untracked `.dbt-martsmith/` folder for a
 human to review and promote. Blast radius stays near zero while the tool
 earns trust.
 
@@ -123,6 +123,23 @@ duplicate it here.
 - Multi-sheet continuity (merging a revised sheet into an existing draft).
 - Full contract-diffing and adapter-gating awareness beyond flagging that
   they're present.
+
+## Development
+
+The grounding and convention-detection logic (`scripts/ground.py`,
+`scripts/detect_conventions.py`) is plain Python with a test suite covering
+the matched/ambiguous/blocked grounding outcomes and the naming/
+materialization/property-file detection rules:
+
+```bash
+uv venv .venv-test && uv pip install --python .venv-test/bin/python -r requirements-dev.txt
+.venv-test/bin/python -m pytest tests/ -v
+```
+
+(Or `pip install -r requirements-dev.txt && pytest tests/ -v` with a regular
+venv.) The rest of the skill's behavior (`AGENTS.md`'s step-by-step logic) is
+prompt-driven, not covered by this suite — it's verified by actually running
+it against a real dbt project.
 
 ## License
 

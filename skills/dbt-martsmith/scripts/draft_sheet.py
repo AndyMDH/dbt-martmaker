@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Scaffold a blank draft metric sheet at .dbt-scribe/sheets/<slug>.draft.csv.
+Scaffold a blank draft metric sheet at .dbt-martsmith/sheets/<slug>.draft.csv.
 
 This script only creates the file skeleton (header row) -- it does not read
 a transcript or fill in any rows. Turning a transcript into candidate rows
@@ -25,7 +25,7 @@ def main() -> None:
     project_root = Path(sys.argv[1]).resolve()
     slug = sys.argv[2]
 
-    sheets_dir = project_root / ".dbt-scribe" / "sheets"
+    sheets_dir = project_root / ".dbt-martsmith" / "sheets"
     sheets_dir.mkdir(parents=True, exist_ok=True)
 
     draft_path = sheets_dir / f"{slug}.draft.csv"

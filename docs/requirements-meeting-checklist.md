@@ -24,7 +24,7 @@ filling the sheet afterward easy instead of a guessing exercise.
 
 ## Source data
 - Which table(s) does this come from? A name mentioned in conversation
-  ("the invoices table") is enough — dbt-scribe grounds it against what
+  ("the invoices table") is enough — dbt-martsmith grounds it against what
   actually exists.
 - Does this data already exist somewhere, or does someone need to confirm a
   new source is being staged?

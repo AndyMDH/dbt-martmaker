@@ -1,4 +1,4 @@
-# dbt-scribe
+# dbt-martsmith
 
 Turns a structured metric requirements sheet into a draft dbt mart model
 (`dim_`/`fct_`/`rpt_`) for human review. Never writes to a real `models/`
@@ -20,26 +20,26 @@ never attempt it.
 ## Input: the metric sheet
 
 The only input this skill acts on is a **confirmed** metric sheet at
-`.dbt-scribe/sheets/<slug>.csv`, with columns: `metric`, `definition`,
+`.dbt-martsmith/sheets/<slug>.csv`, with columns: `metric`, `definition`,
 `calculation`, `source_tables`. A sheet is "confirmed" if it does not have a
 `.draft.csv` extension — a `.draft.csv` file is a candidate a human hasn't
 reviewed yet.
 
 **If asked to run against a `.draft.csv` file: refuse.** Print: `ERROR:
 <file> is an unconfirmed draft sheet — review it, correct it, and rename to
-<slug>.csv before running dbt-scribe on it.` Do not proceed, do not read its
+<slug>.csv before running dbt-martsmith on it.` Do not proceed, do not read its
 rows for grounding.
 
 **If asked to draft a sheet from a transcript** (a separate, optional
 request — not the main flow): read the transcript, extract candidate
 metric/definition/calculation/source rows, write them to
-`.dbt-scribe/sheets/<slug>.draft.csv` using `templates/metric_sheet.csv.tmpl`
+`.dbt-martsmith/sheets/<slug>.draft.csv` using `templates/metric_sheet.csv.tmpl`
 as the header, and stop. Tell the user exactly what to review and that nothing
 was built. Never skip straight from a transcript to a build.
 
 ## Idempotency guard
 
-Before doing anything else: if `.dbt-scribe/drafts/<slug>/meta.json` exists
+Before doing anything else: if `.dbt-martsmith/drafts/<slug>/meta.json` exists
 and its `sheet_checksum` matches the current confirmed sheet's checksum,
 this is a no-op. Print `SKIPPED: <slug>.csv unchanged since last run` and
 stop.
@@ -48,7 +48,7 @@ stop.
 
 Walk upward from the current working directory until a `dbt_project.yml` is
 found; that's the project root. If none is found within a reasonable number
-of parent directories, **ERROR**: `No dbt_project.yml found — dbt-scribe
+of parent directories, **ERROR**: `No dbt_project.yml found — dbt-martsmith
 must be run from inside a dbt project.` Stop; do not guess a root.
 
 Compute a checksum (e.g. sha256) of the confirmed sheet's contents.
@@ -82,7 +82,7 @@ convention — note it as an open question in the proposal instead
 (`No existing marts to sample a naming convention from — confirm the
 prefix/materialization convention to use.`).
 
-Cache the result at `.dbt-scribe/conventions.cache.json`, keyed on the
+Cache the result at `.dbt-martsmith/conventions.cache.json`, keyed on the
 mtime of `dbt-bouncer.yml` and `dbt_project.yml`; re-run detection only if
 either has changed since the cache was written.
 
@@ -122,7 +122,7 @@ read-only.
 ## Step 4 — Draft the proposal
 
 Using `templates/proposal.md.tmpl`, write
-`.dbt-scribe/drafts/<slug>/proposal.md` with one section per metric row,
+`.dbt-martsmith/drafts/<slug>/proposal.md` with one section per metric row,
 each showing: definition, calculation, grounding result and status
 (Matched/Ambiguous/Blocked), and — for Matched/resolved rows — the proposed
 new mart file path and a one-line grain statement inferred from the
@@ -135,13 +135,13 @@ Questions checklist line. Never omit a row because it was hard to resolve.
 
 Only for rows that ended up Matched or resolved-Ambiguous. For each:
 
-- Write `.dbt-scribe/drafts/<slug>/models/draft__<name>.sql` using
+- Write `.dbt-martsmith/drafts/<slug>/models/draft__<name>.sql` using
   `templates/model.sql.tmpl`, with the detected marts naming convention
   applied to `<name>` (still prefixed with `draft__` ahead of it — the
   `draft__` prefix is never dropped by this skill, only by the human when
   promoting it).
 - Add an entry to a shared
-  `.dbt-scribe/drafts/<slug>/models/draft___<group>__models.yml` (schema
+  `.dbt-martsmith/drafts/<slug>/models/draft___<group>__models.yml` (schema
   file, using `templates/schema.yml.tmpl`) with:
   - `description:` populated from the row's `definition` column, verbatim
     or lightly cleaned up — never invented beyond what the sheet says.
@@ -159,7 +159,7 @@ extending an existing mart instead — put an inline "extend `<model>` at
 
 ## Step 6 — Write state
 
-Write `.dbt-scribe/drafts/<slug>/meta.json`:
+Write `.dbt-martsmith/drafts/<slug>/meta.json`:
 ```json
 {
   "sheet_checksum": "<sha256>",
@@ -178,12 +178,12 @@ committed or built.
 
 ## Rules of engagement
 
-- Never write outside `.dbt-scribe/`.
+- Never write outside `.dbt-martsmith/`.
 - Never call a dbt command that mutates a warehouse (`build`/`run`/`test`/
   `seed`/`snapshot`) — only read-only introspection.
 - Never invent a `ref()`/model match that `ground.py` didn't confirm.
 - Never proceed past a `.draft.csv` without human confirmation.
-- If `.dbt-scribe/` isn't already in the project's `.gitignore`, mention it
+- If `.dbt-martsmith/` isn't already in the project's `.gitignore`, mention it
   in the summary as a suggestion — do not edit `.gitignore` yourself.
 - Process one metric sheet fully before starting another if asked to handle
   multiple.
