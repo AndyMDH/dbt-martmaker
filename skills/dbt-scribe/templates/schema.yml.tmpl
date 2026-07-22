@@ -1,0 +1,17 @@
+# DBT-SCRIBE DRAFT -- generated from <slug>.csv on <ISO8601>.
+# Not wired into the project until a human reviews it, drops the draft__
+# prefix, and moves it into the real models/marts/ property file.
+
+models:
+  - name: draft__<name>
+    description: "<definition column, verbatim or lightly cleaned up>"
+    meta:
+      source_sheet: <slug>.csv
+      requested_by: "<if known from the sheet, else omit>"
+      date: <today, ISO 8601>
+    columns:
+      - name: <column implied to need not_null, if any>
+        tests:
+          - not_null
+    # freshness: only if the sheet's calculation column explicitly stated
+    # a refresh/timeliness requirement -- otherwise omit this block entirely.

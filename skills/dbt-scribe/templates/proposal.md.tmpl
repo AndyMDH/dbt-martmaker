@@ -1,0 +1,29 @@
+---
+status: proposed
+source_sheet: <slug>.csv
+generated_at: <ISO8601>
+naming_convention_detected_from: <dbt-bouncer.yml | sampled:models/marts | none>
+---
+
+# <Title> — Mart Proposal
+
+## <Metric name>
+- Definition: <definition column>
+- Calculation: <calculation column>
+- Grounding: <matched "<model>" | ambiguous - candidates: [...] | blocked - no matching staging/intermediate model found>
+- Status: <Matched | Ambiguous | Blocked>
+
+<!-- repeat one section per metric row -->
+
+## Proposed changes
+- New: `draft__<name>.sql` (grain: <inferred grain statement>)
+- schema.yml: description from Definition, tests/freshness from Calculation
+
+## Open questions
+- [ ] <one line per Ambiguous/Blocked row, or any other unresolved item>
+
+## Next steps for human review
+1. Resolve open questions above (bring to the next meeting if needed).
+2. Review the draft SQL/schema.yml under `models/`.
+3. Rename (drop the `draft__` prefix), move into the real
+   `models/marts/...` directory, and run `dbt parse`/`dbt-bouncer` locally.
