@@ -29,7 +29,7 @@ agent that reads Claude Code skills or `AGENTS.md`.
 
 > Set up a dbt-martsmith metric sheet for churn metrics, then run it.
 
-The sheet is one row per metric:
+The sheet is meant for the stakeholder to fill out, one row per metric:
 
 | Column | Required | Example |
 |---|---|---|
@@ -37,16 +37,18 @@ The sheet is one row per metric:
 | `definition` | yes | Number of payments processed |
 | `calculation` | yes | just a count of payments |
 | `source_tables` | yes | payments |
+| `importance` | yes (`low`/`medium`/`high`) | low |
 
 Every source gets checked against `target/manifest.json` — **matched**,
-**ambiguous**, or **blocked**, never guessed. Output lands in
-`.dbt-martsmith/drafts/`: a proposal (starts with a summary table, same
-shape as the input) + draft SQL/schema.yml for you to review and promote
-into `models/marts/` yourself.
+**ambiguous**, or **blocked**, never guessed. The skill **stops and shows
+you a proposal first** (a summary table: metric, column used, description,
+calculation, importance, status) — nothing gets built until you approve
+it. Only then does it write draft SQL/schema.yml into `.dbt-martsmith/drafts/`,
+with test rigor scaled to each metric's `importance`, for you to review and
+promote into `models/marts/` yourself.
 
 [Example sheet](examples/churn-metrics.csv) ·
-[Sample output](examples/proposal.md) ·
-[Meeting checklist](docs/requirements-meeting-checklist.md)
+[Sample output](examples/proposal.md)
 
 ## Repo layout
 
@@ -56,7 +58,6 @@ into `models/marts/` yourself.
 | `skills/dbt-martsmith/SKILL.md`, `CLAUDE.md` | One-line imports of `AGENTS.md`, so different agent tools can discover it |
 | `skills/dbt-martsmith/scripts/` | The deterministic parts: grounding + naming-convention detection |
 | `examples/` | A filled-in sheet, sample output, and the workflow diagram |
-| `docs/` | The requirements-meeting checklist |
 | `tests/` | pytest suite for `scripts/` (the skill's own logic is verified by running it, not unit tested) |
 | `install.sh` | Copies `skills/dbt-martsmith/` into your agent's skill folder |
 

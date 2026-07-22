@@ -1,4 +1,4 @@
-metric,definition,calculation,source_tables
-Payment count,Number of payments processed,just a count of payments,payments
-Monthly churned users,Active in last 30 days then inactive,count of users who stopped logging in over the last month,user_events
-Revenue lost to churn,Subscription revenue from users who churned this month,total subscription revenue from people who churned this month,subscriptions
+metric,definition,calculation,source_tables,importance
+Payment count,Number of payments processed,just a count of payments,payments,low
+Monthly churned users,Active in last 30 days then inactive,count of users who stopped logging in over the last month,user_events,high
+Revenue lost to churn,Subscription revenue from users who churned this month,total subscription revenue from people who churned this month,subscriptions,medium

@@ -9,9 +9,14 @@ models:
       source_sheet: <slug>.csv
       requested_by: "<if known from the sheet, else omit>"
       date: <today, ISO 8601>
+      importance: <low | medium | high, from the sheet>
     columns:
       - name: <column implied to need not_null, if any>
         tests:
           - not_null
+    # Test rigor is calibrated by the sheet's importance column (see
+    # AGENTS.md Step 5): high -> not_null + accepted_values + freshness
+    # where the text supports it; medium -> not_null only where the text
+    # explicitly requires it; low -> description only, no drafted tests.
     # freshness: only if the sheet's calculation column explicitly stated
     # a refresh/timeliness requirement -- otherwise omit this block entirely.

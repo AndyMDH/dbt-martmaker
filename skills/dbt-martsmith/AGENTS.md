@@ -3,10 +3,11 @@
 Turns a structured metric requirements sheet into a draft dbt mart model
 (`dim_`/`fct_`/`rpt_`) for human review. Never writes to a real `models/`
 directory, never runs `dbt build`/`run`/`test`, never guesses a match it
-can't confirm.
+can't confirm — and never generates draft files without explicit approval
+of the proposal first.
 
-Vault/project root is the directory containing `dbt_project.yml`. All paths
-below are relative to it unless stated otherwise.
+Project root is the directory containing `dbt_project.yml`. All paths below
+are relative to it unless stated otherwise.
 
 ## Scope
 
@@ -19,19 +20,44 @@ never attempt it.
 
 ## Input: the metric sheet
 
-The only input this skill acts on is a metric sheet at
-`.dbt-martsmith/sheets/<slug>.csv`, with columns: `metric`, `definition`,
-`calculation`, `source_tables`. The user fills this in themselves (or asks
-you to help draft one directly, in the same conversation, before running the
-skill on it) — either way, treat what's in the file as the actual input once
-you're asked to run against it.
+The sheet is meant to be filled out by the stakeholder who wants the
+metric, not just an engineer — keep that in mind if you're helping someone
+draft one conversationally. It lives at `.dbt-martsmith/sheets/<slug>.csv`,
+with columns: `metric`, `definition`, `calculation`, `source_tables`,
+`importance`.
 
-## Idempotency guard
+`importance` is one of `low`/`medium`/`high`, set by the stakeholder based
+on how critical the metric is — it drives how much test rigor gets drafted
+in Step 5 (see there). If a row's `importance` cell is blank, treat it as
+`medium` rather than erroring; don't make a stakeholder think hard about
+this column to use the tool.
 
-Before doing anything else: if `.dbt-martsmith/drafts/<slug>/meta.json` exists
-and its `sheet_checksum` matches the current confirmed sheet's checksum,
-this is a no-op. Print `SKIPPED: <slug>.csv unchanged since last run` and
-stop.
+## Two-phase flow: propose, then build on approval
+
+This skill never jumps straight from a sheet to draft SQL files. It always
+stops after Step 4 and shows the stakeholder/human a proposal to approve
+first — only after they confirm does Step 5 actually write any files. This
+mirrors what the sheet already asks for: approve the mapping (metric →
+matched model → description → calculation) before anything gets built.
+
+State lives in `.dbt-martsmith/drafts/<slug>/meta.json`, with a `status`
+field of `proposed` or `built`:
+
+- **No `meta.json`, or its `sheet_checksum` doesn't match the current
+  sheet**: this is a fresh (re-)proposal. Run Steps 0–4, write
+  `meta.json` with `status: proposed`, then **stop** — do not run Step 5.
+  End your turn by asking something like: *"Here's the proposal — want me
+  to build the draft SQL/schema.yml files for the matched rows?"*
+- **`meta.json` exists, checksum matches, `status: proposed`, and the
+  human has just approved** (in this conversation, or by asking you to
+  build it in a new one): run Step 5, then update `meta.json` to
+  `status: built` and `proposal.md`'s frontmatter to match.
+- **`meta.json` exists, checksum matches, `status: built`**: no-op. Print
+  `SKIPPED: <slug>.csv already built (<drafts_dir>)` and stop.
+
+If the sheet changed since the last proposal (checksum mismatch), always
+re-ground and re-propose from scratch — never build from stale grounding
+results.
 
 ## Step 0 — Locate & checksum
 
@@ -47,12 +73,14 @@ Derive `<slug>` from the sheet's filename (without extension).
 ## Step 1 — Parse sheet rows
 
 Read the CSV. Required columns: `metric`, `definition`, `calculation`,
-`source_tables`. If any are missing, **ERROR**: `Sheet is missing required
-column(s): <list>` and stop — do not try to proceed with partial columns.
+`source_tables`, `importance`. If any are missing, **ERROR**: `Sheet is
+missing required column(s): <list>` and stop — do not try to proceed with
+partial columns.
 
 Each row becomes one working item carrying: metric name, definition text,
-calculation text, and one or more source table references (a
-`source_tables` cell may contain multiple names, comma-separated).
+calculation text, source table reference(s) (comma-separated if more than
+one), and importance (`low`/`medium`/`high`, defaulting to `medium` if
+blank).
 
 ## Step 2 — Detect mart-layer conventions
 
@@ -104,14 +132,19 @@ Do not fall back to guessing from the sheet's prose alone.
 **Never call `dbt build`, `dbt run`, or `dbt test`** — grounding is always
 read-only.
 
-## Step 4 — Draft the proposal
+## Step 4 — Draft the proposal (stop here for approval)
 
 Using `templates/proposal.md.tmpl`, write
-`.dbt-martsmith/drafts/<slug>/proposal.md`. Start with a **Summary table**
-(Metric | Status | Notes), one row per metric in the same order as the
-sheet — this gives the same at-a-glance table shape as the input sheet
-before anyone reads the detail below it. Then one section per metric row,
-each showing: definition, calculation, grounding result and status
+`.dbt-martsmith/drafts/<slug>/proposal.md` with `status: proposed` in its
+frontmatter. Start with a **Summary table** (Metric | Column used |
+Description | Calculation | Importance | Status), one row per metric in
+the same order as the sheet — "Column used" is the matched model name (or
+blank for Ambiguous/Blocked). This is the artifact the stakeholder actually
+approves, so it needs to show what they'll recognize from their own sheet,
+not just an engineering status code.
+
+Then one section per metric row with the full detail: definition,
+calculation, importance, grounding result and status
 (Matched/Ambiguous/Blocked), and — for Matched/resolved rows — the proposed
 new mart file path and a one-line grain statement inferred from the
 calculation/definition text.
@@ -119,7 +152,10 @@ calculation/definition text.
 Every row that is `ambiguous` (and unresolved) or `blocked` becomes an Open
 Questions checklist line. Never omit a row because it was hard to resolve.
 
-## Step 5 — Draft skeleton model files
+This is where you stop (see "Two-phase flow" above) — do not proceed to
+Step 5 in the same turn unless the human has already told you to build it.
+
+## Step 5 — Draft skeleton model files (only after approval)
 
 Only for rows that ended up Matched or resolved-Ambiguous. For each:
 
@@ -135,11 +171,20 @@ Only for rows that ended up Matched or resolved-Ambiguous. For each:
     or lightly cleaned up — never invented beyond what the sheet says.
   - `meta: {source_sheet: <slug>.csv, requested_by: <if known>,
     date: <today, ISO 8601>}`.
-  - A generic `not_null` test on any column the `calculation` text
-    explicitly implies must never be null (e.g. "revenue can't be null") —
-    only from an explicit statement, never inferred speculatively.
-  - A `freshness:` or a plain note in the description if the sheet
-    explicitly states a refresh/timeliness requirement.
+  - Tests calibrated by the row's `importance`:
+    - **high**: `not_null` on the columns the calculation clearly depends
+      on, `accepted_values` if the sheet implies an enumerable set, and a
+      `freshness:` block if any timeliness requirement was stated. Note in
+      the proposal that a contract may be worth considering.
+    - **medium**: `not_null` only on a column the calculation/definition
+      text *explicitly* says can't be null (e.g. "revenue can't be null")
+      — same as before, never inferred speculatively.
+    - **low**: description only, no drafted tests — leave a comment
+      inviting the human to add tests themselves if they turn out to
+      matter more than the sheet suggested.
+  - Never invent a test that isn't grounded in something the sheet
+    actually said, regardless of importance — `high` raises how hard you
+    look for explicit signals in the text, it doesn't license guessing.
 
 Never create a new file for a metric that the grounding step recommends
 extending an existing mart instead — put an inline "extend `<model>` at
@@ -147,13 +192,14 @@ extending an existing mart instead — put an inline "extend `<model>` at
 
 ## Step 6 — Write state
 
-Write `.dbt-martsmith/drafts/<slug>/meta.json`:
+Write/update `.dbt-martsmith/drafts/<slug>/meta.json`:
 ```json
 {
   "sheet_checksum": "<sha256>",
   "generated_at": "<ISO 8601>",
+  "status": "proposed | built",
   "rows": [
-    {"metric": "...", "status": "matched|ambiguous|blocked", "target": "..."}
+    {"metric": "...", "status": "matched|ambiguous|blocked", "target": "...", "importance": "low|medium|high"}
   ]
 }
 ```
@@ -161,8 +207,8 @@ Write `.dbt-martsmith/drafts/<slug>/meta.json`:
 ## Step 7 — Summary
 
 Print a short summary: how many rows were matched/ambiguous/blocked, where
-the proposal and draft files were written, and a reminder that nothing was
-committed or built.
+the proposal (and, once built, draft files) were written, and a reminder
+that nothing was committed or built against the warehouse.
 
 ## Rules of engagement
 
@@ -170,6 +216,7 @@ committed or built.
 - Never call a dbt command that mutates a warehouse (`build`/`run`/`test`/
   `seed`/`snapshot`) — only read-only introspection.
 - Never invent a `ref()`/model match that `ground.py` didn't confirm.
+- Never run Step 5 without an explicit approval of the Step 4 proposal.
 - If `.dbt-martsmith/` isn't already in the project's `.gitignore`, mention it
   in the summary as a suggestion — do not edit `.gitignore` yourself.
 - Process one metric sheet fully before starting another if asked to handle
