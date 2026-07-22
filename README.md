@@ -26,10 +26,20 @@ agent that reads Claude Code skills or `AGENTS.md`.
 
 > Set up a dbt-martsmith metric sheet for churn metrics, then run it.
 
+The sheet is one row per metric:
+
+| Column | Required | Example |
+|---|---|---|
+| `metric` | yes | Payment count |
+| `definition` | yes | Number of payments processed |
+| `calculation` | yes | just a count of payments |
+| `source_tables` | yes | payments |
+
 Every source gets checked against `target/manifest.json` — **matched**,
 **ambiguous**, or **blocked**, never guessed. Output lands in
-`.dbt-martsmith/drafts/`: a proposal + draft SQL/schema.yml for you to
-review and promote into `models/marts/` yourself.
+`.dbt-martsmith/drafts/`: a proposal (starts with a summary table, same
+shape as the input) + draft SQL/schema.yml for you to review and promote
+into `models/marts/` yourself.
 
 [Example sheet](examples/churn-metrics.csv) ·
 [Sample output](examples/proposal.md) ·

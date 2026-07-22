@@ -107,7 +107,10 @@ read-only.
 ## Step 4 — Draft the proposal
 
 Using `templates/proposal.md.tmpl`, write
-`.dbt-martsmith/drafts/<slug>/proposal.md` with one section per metric row,
+`.dbt-martsmith/drafts/<slug>/proposal.md`. Start with a **Summary table**
+(Metric | Status | Notes), one row per metric in the same order as the
+sheet — this gives the same at-a-glance table shape as the input sheet
+before anyone reads the detail below it. Then one section per metric row,
 each showing: definition, calculation, grounding result and status
 (Matched/Ambiguous/Blocked), and — for Matched/resolved rows — the proposed
 new mart file path and a one-line grain statement inferred from the

@@ -7,6 +7,14 @@ naming_convention_detected_from: dbt-bouncer.yml
 
 # Mart Proposal
 
+## Summary
+
+| Metric | Status | Notes |
+|---|---|---|
+| Payment count | Matched | `stg_payments` |
+| Monthly churned users | Blocked | no source for "user_events" |
+| Revenue lost to churn | Ambiguous | 2 candidates for "subscriptions" |
+
 ## Payment count
 - Definition: Number of payments processed
 - Calculation: just a count of payments
