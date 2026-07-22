@@ -38,22 +38,27 @@ SQL: [`examples/churn-metrics.csv`](examples/churn-metrics.csv)
 
 | Column | Required | Example |
 |---|---|---|
-| `metric` | yes | Payment count |
-| `definition` | yes | Number of payments processed |
-| `calculation` | yes | just a count of payments |
-| `source_tables` | yes | payments |
-| `importance` | yes (`low`/`medium`/`high`) | low |
+| `metric` | yes | Marketing ROI |
+| `description` | yes | How efficient our marketing spend is |
+| `reasoning` | yes | compare what we spent on ads against the revenue it brought in |
+| `importance` | yes (`low`/`medium`/`high`) | medium |
+
+`reasoning` is deliberately loose — no SQL, no table names required. It's
+what the skill mines to *propose* the matched columns and calculation,
+which you then approve or correct.
 
 **Output** — a proposal, then approved draft models:
 [`examples/proposal.md`](examples/proposal.md)
 
 **Under the hood:**
-1. Parses the sheet.
+1. Parses the sheet, reading `reasoning` for candidate tables/columns and a
+   rough shape of the calculation.
 2. Detects your project's naming/materialization conventions
    (`dbt-bouncer.yml`, or sampled from existing marts).
-3. Grounds each source against `target/manifest.json` — **matched**,
+3. Grounds each candidate against `target/manifest.json` — **matched**,
    **ambiguous**, or **blocked**, never guessed.
-4. Writes a proposal (summary table + per-metric detail) and **stops for
+4. Writes a proposal (summary table + per-metric detail, `reasoning` shown
+   verbatim next to its own proposed/inferred calculation) and **stops for
    your approval** — nothing is built yet.
 5. Once approved: writes draft SQL/schema.yml into `.dbt-martsmith/drafts/`,
    tests scaled to each metric's `importance`.

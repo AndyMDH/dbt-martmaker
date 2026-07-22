@@ -9,14 +9,15 @@ naming_convention_detected_from: <dbt-bouncer.yml | sampled:models/marts | none>
 
 ## Summary
 
-| Metric | Column used | Description | Calculation | Importance | Status |
+| Metric | Column used | Description | Proposed calculation | Importance | Status |
 |---|---|---|---|---|---|
-| <metric name> | <matched model, or blank> | <definition column> | <calculation column> | <low \| medium \| high> | <Matched \| Ambiguous \| Blocked> |
+| <metric name> | <matched model, or blank> | <description column> | <your inferred calculation> | <low \| medium \| high> | <Matched \| Ambiguous \| Blocked> |
 <!-- one row per metric, same order as the sheet -->
 
 ## <Metric name>
-- Definition: <definition column>
-- Calculation: <calculation column>
+- Description: <description column>
+- Reasoning (stakeholder, verbatim): <reasoning column>
+- Proposed calculation (your inference — confirm before building): <derived from reasoning + grounded columns>
 - Importance: <low | medium | high>
 - Grounding: <matched "<model>" | ambiguous - candidates: [...] | blocked - no matching staging/intermediate model found>
 - Status: <Matched | Ambiguous | Blocked>
@@ -26,7 +27,7 @@ naming_convention_detected_from: <dbt-bouncer.yml | sampled:models/marts | none>
 ## Proposed changes (once approved)
 - New: `draft__<name>.sql` (grain: <inferred grain statement>) —
   tests calibrated to <importance>
-- schema.yml: description from Definition, tests/freshness per the
+- schema.yml: description from Description, tests/freshness per the
   importance-based rules in AGENTS.md Step 5
 
 ## Open questions
@@ -34,7 +35,8 @@ naming_convention_detected_from: <dbt-bouncer.yml | sampled:models/marts | none>
 
 ## Next steps
 1. Resolve open questions above.
-2. **Reply to approve** — nothing has been built yet. Once you confirm,
-   the draft SQL/schema.yml files above get written for review.
+2. **Reply to approve** — nothing has been built yet, and the calculation
+   above is an inference, not what the stakeholder literally wrote. Once
+   you confirm, the draft SQL/schema.yml files get written for review.
 3. After that: rename (drop the `draft__` prefix), move into the real
    `models/marts/...` directory, and run `dbt parse`/`dbt-bouncer` locally.

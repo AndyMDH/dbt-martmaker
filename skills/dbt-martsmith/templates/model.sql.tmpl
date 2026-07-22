@@ -4,19 +4,21 @@
 -- models/marts/. Do not run `dbt build` against this file in place.
 --
 -- Metric: <metric name>
--- Definition: <definition column, verbatim from the sheet>
+-- Description: <description column, verbatim from the sheet>
+-- Reasoning (stakeholder, verbatim): <reasoning column>
+-- Proposed calculation (inferred, approved before this file was built): <derived calculation>
 
 with
 
-<staging_or_intermediate_ref> as (
+source_model as (
     select * from {{ ref('<matched_model_name>') }}
 ),
 
 final as (
     select
-        -- TODO: columns implied by the calculation column go here
+        -- TODO: columns implied by the proposed calculation above go here
         *
-    from <staging_or_intermediate_ref>
+    from source_model
 )
 
 select * from final
