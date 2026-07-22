@@ -12,6 +12,7 @@ naming_convention_detected_from: dbt-bouncer.yml
 | Metric | Column used | Description | Proposed calculation | Proposed tests | Importance | Status |
 |---|---|---|---|---|---|---|
 | Payment count | `stg_payments` | Number of payments processed | count of rows in `stg_payments` | none (low importance) | low | Matched |
+| Average payment amount | `stg_payments` | Average dollar amount per payment | avg(amount) in `stg_payments` | not_null, not_negative (reused) | high | Matched |
 | Monthly churned users | — | Active in last 30 days then inactive | — (blocked, see below) | — | high | Blocked |
 | Revenue lost to churn | — | Subscription revenue from users who churned this month | — (ambiguous, see below) | — | medium | Ambiguous |
 | Marketing ROI | — | How efficient our marketing spend is | — (blocked, see below) | — | medium | Blocked |
@@ -22,6 +23,15 @@ naming_convention_detected_from: dbt-bouncer.yml
 - Proposed calculation (inference — confirm before building): count of rows in `stg_payments`
 - Proposed tests: none — importance is low, so only the description gets drafted (see AGENTS.md Step 5)
 - Importance: low
+- Grounding: matched `stg_payments` (models/staging/stripe/stg_payments.sql) — confirmed via manifest, score 1.0
+- Status: Matched
+
+## Average payment amount
+- Description: Average dollar amount per payment
+- Reasoning (stakeholder, verbatim): average how much each payment is for - amounts should never be null or negative
+- Proposed calculation (inference — confirm before building): `avg(amount)` across all rows in `stg_payments`
+- Proposed tests: `not_null` (explicit in reasoning) + `not_negative` — this project already has that custom test (used twice elsewhere), reused here instead of a generic substitute (see AGENTS.md Step 5)
+- Importance: high
 - Grounding: matched `stg_payments` (models/staging/stripe/stg_payments.sql) — confirmed via manifest, score 1.0
 - Status: Matched
 
@@ -54,10 +64,13 @@ naming_convention_detected_from: dbt-bouncer.yml
 
 ## Proposed changes (once approved)
 - New: `draft__rpt_payment_count.sql` (grain: one row per payment) —
-  tests calibrated to low importance (description only, no drafted tests).
-  Note for future high/medium-importance metrics on numeric columns: this
-  project already has a custom `not_negative` test (used twice elsewhere)
-  — that gets proposed ahead of a generic substitute when it fits.
+  tests calibrated to low importance (description only, no drafted tests)
+- New: `draft__rpt_avg_payment_amount.sql` (grain: one row, aggregate) —
+  `not_null` + the project's existing `not_negative` custom test, since
+  importance is high and the reasoning explicitly ruled out null/negative
+  values. See [`draft__rpt_avg_payment_amount.sql`](draft__rpt_avg_payment_amount.sql)
+  and [`draft___payments__models.yml`](draft___payments__models.yml) for
+  what these actually look like once built.
 
 ## Open questions
 - [ ] Confirm which of [`stg_billing__subscriptions`, `int_billing__subscription_history`] is correct for "subscriptions" (Revenue lost to churn)
@@ -66,9 +79,9 @@ naming_convention_detected_from: dbt-bouncer.yml
 
 ## Next steps
 1. Resolve open questions above.
-2. **Reply to approve** — nothing has been built yet, and the calculation
+2. **Reply to approve** — nothing has been built yet, and every calculation
    above is an inference, not what the stakeholder literally wrote. Once
-   you confirm, the draft SQL/schema.yml for Payment count gets written
-   for review.
+   you confirm, the draft SQL/schema.yml for the two Matched rows get
+   written for review.
 3. After that: rename (drop the `draft__` prefix), move into the real
    `models/marts/...` directory, and run `dbt parse`/`dbt-bouncer` locally.

@@ -1,5 +1,6 @@
 metric,description,reasoning,importance
 Payment count,Number of payments processed,just a count of payments,low
+Average payment amount,Average dollar amount per payment,average how much each payment is for - amounts should never be null or negative,high
 Monthly churned users,Active in last 30 days then inactive,count of users who stopped logging in over the last month based on our login/activity data,high
 Revenue lost to churn,Subscription revenue from users who churned this month,total subscription revenue from people who churned this month using our subscriptions data,medium
 Marketing ROI,How efficient our marketing spend is,compare what we spent on ads against the revenue it brought in - probably need ad spend and revenue numbers,medium

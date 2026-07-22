@@ -54,6 +54,11 @@ questions below it):
 
 Full file: [`examples/proposal.md`](examples/proposal.md)
 
+**Once approved** — draft SQL + schema.yml, tests scaled to importance and
+reusing an existing custom test where one fits:
+[`draft__rpt_avg_payment_amount.sql`](examples/draft__rpt_avg_payment_amount.sql) ·
+[`draft___payments__models.yml`](examples/draft___payments__models.yml)
+
 **Under the hood:**
 1. Parses the sheet, reading `reasoning` for candidate tables/columns and a
    rough shape of the calculation.

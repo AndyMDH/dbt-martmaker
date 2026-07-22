@@ -1,0 +1,28 @@
+# DBT-MARTSMITH DRAFT -- generated from churn-metrics.csv on
+# 2026-07-22T21:20:06+02:00. Not wired into the project until a human
+# reviews it, drops the draft__ prefix, and moves it into the real
+# models/marts/ property file.
+
+models:
+  - name: draft__rpt_payment_count
+    description: "Number of payments processed"
+    meta:
+      source_sheet: churn-metrics.csv
+      date: 2026-07-22
+      importance: low
+    columns: []
+    # importance: low -> description only, no drafted tests (see AGENTS.md Step 5)
+
+  - name: draft__rpt_avg_payment_amount
+    description: "Average dollar amount per payment"
+    meta:
+      source_sheet: churn-metrics.csv
+      date: 2026-07-22
+      importance: high
+    columns:
+      - name: avg_payment_amount
+        tests:
+          - not_null
+          - not_negative  # reused: this project already has a custom
+                          # not_negative test (used twice elsewhere) --
+                          # proposed here instead of a generic substitute
