@@ -1,4 +1,4 @@
-# dbt-martsmith
+# dbt-martmaker
 
 Turns a structured metric requirements sheet into a draft dbt mart model
 (`dim_`/`fct_`/`rpt_`) for human review. Never writes to a real `models/`
@@ -22,7 +22,7 @@ never attempt it.
 
 The sheet is meant to be filled out by the stakeholder who wants the
 metric, not just an engineer — keep that in mind if you're helping someone
-draft one conversationally. It lives at `.dbt-martsmith/sheets/<slug>.csv`,
+draft one conversationally. It lives at `.dbt-martmaker/sheets/<slug>.csv`,
 with columns: `metric`, `description`, `reasoning`, `importance`.
 
 - `metric` — a short name, e.g. "Marketing ROI".
@@ -50,7 +50,7 @@ calculation is a genuine inference on your part, not a transcription of
 what the stakeholder wrote — they need to see and confirm it before
 anything gets built.
 
-State lives in `.dbt-martsmith/drafts/<slug>/meta.json`, with a `status`
+State lives in `.dbt-martmaker/drafts/<slug>/meta.json`, with a `status`
 field of `proposed` or `built`:
 
 - **No `meta.json`, or its `sheet_checksum` doesn't match the current
@@ -73,7 +73,7 @@ results.
 
 Walk upward from the current working directory until a `dbt_project.yml` is
 found; that's the project root. If none is found within a reasonable number
-of parent directories, **ERROR**: `No dbt_project.yml found — dbt-martsmith
+of parent directories, **ERROR**: `No dbt_project.yml found — dbt-martmaker
 must be run from inside a dbt project.` Stop; do not guess a root.
 
 Compute a checksum (e.g. sha256) of the sheet's contents.
@@ -117,7 +117,7 @@ convention — note it as an open question in the proposal instead
 (`No existing marts to sample a naming convention from — confirm the
 prefix/materialization convention to use.`).
 
-Cache the result at `.dbt-martsmith/conventions.cache.json`, keyed on the
+Cache the result at `.dbt-martmaker/conventions.cache.json`, keyed on the
 mtime of `dbt-bouncer.yml` and `dbt_project.yml`; re-run detection only if
 either has changed since the cache was written.
 
@@ -157,7 +157,7 @@ read-only.
 ## Step 4 — Draft the proposal (stop here for approval)
 
 Using `templates/proposal.md.tmpl`, write
-`.dbt-martsmith/drafts/<slug>/proposal.md` with `status: proposed` in its
+`.dbt-martmaker/drafts/<slug>/proposal.md` with `status: proposed` in its
 frontmatter. Start with a **Summary table** (Metric | Column used |
 Description | Proposed calculation | Importance | Status), one row per
 metric in the same order as the sheet — "Column used" is the matched model
@@ -183,13 +183,13 @@ Step 5 in the same turn unless the human has already told you to build it.
 
 Only for rows that ended up Matched or resolved-Ambiguous. For each:
 
-- Write `.dbt-martsmith/drafts/<slug>/models/draft__<name>.sql` using
+- Write `.dbt-martmaker/drafts/<slug>/models/draft__<name>.sql` using
   `templates/model.sql.tmpl`, with the detected marts naming convention
   applied to `<name>` (still prefixed with `draft__` ahead of it — the
   `draft__` prefix is never dropped by this skill, only by the human when
   promoting it).
 - Add an entry to a shared
-  `.dbt-martsmith/drafts/<slug>/models/draft___<group>__models.yml` (schema
+  `.dbt-martmaker/drafts/<slug>/models/draft___<group>__models.yml` (schema
   file, using `templates/schema.yml.tmpl`) with:
   - `description:` populated from the row's `description` column, verbatim
     or lightly cleaned up.
@@ -224,7 +224,7 @@ extending an existing mart instead — put an inline "extend `<model>` at
 
 ## Step 6 — Write state
 
-Write/update `.dbt-martsmith/drafts/<slug>/meta.json`:
+Write/update `.dbt-martmaker/drafts/<slug>/meta.json`:
 ```json
 {
   "sheet_checksum": "<sha256>",
@@ -244,7 +244,7 @@ that nothing was committed or built against the warehouse.
 
 ## Rules of engagement
 
-- Never write outside `.dbt-martsmith/`.
+- Never write outside `.dbt-martmaker/`.
 - Never call a dbt command that mutates a warehouse (`build`/`run`/`test`/
   `seed`/`snapshot`) — only read-only introspection.
 - Never invent a `ref()`/model match that `ground.py` didn't confirm.
@@ -252,7 +252,7 @@ that nothing was committed or built against the warehouse.
 - Always keep the stakeholder's `reasoning` verbatim and visually distinct
   from your own proposed calculation — never blend them into one line that
   looks like something the stakeholder wrote.
-- If `.dbt-martsmith/` isn't already in the project's `.gitignore`, mention it
+- If `.dbt-martmaker/` isn't already in the project's `.gitignore`, mention it
   in the summary as a suggestion — do not edit `.gitignore` yourself.
 - Process one metric sheet fully before starting another if asked to handle
   multiple.

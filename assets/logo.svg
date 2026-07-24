@@ -17,5 +17,5 @@
   <rect x="44" y="48" width="22" height="18" rx="3" fill="#ffffff"/>
   <rect x="70" y="48" width="12" height="18" rx="3" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-dasharray="3,3"/>
 
-  <text x="122" y="62" font-size="38" font-weight="700" fill="#1f2328">dbt-martsmith</text>
+  <text x="122" y="62" font-size="38" font-weight="700" fill="#1f2328">dbt-martmaker</text>
 </svg>

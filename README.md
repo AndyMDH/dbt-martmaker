@@ -1,9 +1,9 @@
 <div align="center">
-  <img src="assets/logo.svg" alt="dbt-martsmith" width="380">
+  <img src="assets/logo.svg" alt="dbt-martmaker" width="380">
 </div>
 
 <p align="center">
-  Describe the metrics you need in plain language — dbt-martsmith checks
+  Describe the metrics you need in plain language — dbt-martmaker checks
   what already exists in your dbt project and drafts a mart model for you
   to review. It's an <b>agent skill</b>: instructions your AI coding
   assistant (Claude Code, etc.) follows directly, not a program you install
@@ -17,7 +17,7 @@
 ## Install
 
 ```bash
-git clone https://github.com/AndyMDH/dbt-martsmith.git && ./dbt-martsmith/install.sh
+git clone https://github.com/AndyMDH/dbt-martmaker.git && ./dbt-martmaker/install.sh
 ```
 
 Requires a dbt project with `target/manifest.json` (`dbt parse`), and an
@@ -27,9 +27,9 @@ agent that reads Claude Code skills or `AGENTS.md`.
 
 **First time setup:** `cd` into your dbt project and ask your agent:
 
-> Set up a dbt-martsmith metric sheet for churn metrics, then run it.
+> Set up a dbt-martmaker metric sheet for churn metrics, then run it.
 
-It scaffolds `.dbt-martsmith/sheets/churn-metrics.csv` and fills it in with
+It scaffolds `.dbt-martmaker/sheets/churn-metrics.csv` and fills it in with
 you. After that: edit that sheet, or start a new one, and tell your agent
 to run it.
 
@@ -71,7 +71,7 @@ reusing an existing custom test where one fits:
 4. Writes a proposal (summary table + per-metric detail, `reasoning` shown
    verbatim next to its own proposed calculation and tests) and **stops
    for your approval** — nothing is built yet.
-5. Once approved: writes draft SQL/schema.yml into `.dbt-martsmith/drafts/`,
+5. Once approved: writes draft SQL/schema.yml into `.dbt-martmaker/drafts/`,
    tests scaled to each metric's `importance` and reusing an existing
    custom/package test where one already fits.
 6. You review, then promote the drafts into `models/marts/` yourself.

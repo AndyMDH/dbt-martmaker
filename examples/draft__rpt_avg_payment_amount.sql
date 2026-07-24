@@ -1,4 +1,4 @@
--- DBT-MARTSMITH DRAFT
+-- DBT-MARTMAKER DRAFT
 -- Generated from churn-metrics.csv on 2026-07-22T21:20:06+02:00. Not part
 -- of the dbt DAG until a human reviews this, drops the draft__ prefix,
 -- and moves it into models/marts/. Do not run `dbt build` against this

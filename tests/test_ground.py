@@ -100,7 +100,7 @@ def test_description_only_evidence_never_auto_matches(dbt_project):
 
 def test_only_staging_and_intermediate_models_are_candidates(dbt_project):
     """Mart-layer models themselves must never be grounding candidates --
-    dbt-martsmith builds marts, it doesn't match against other marts."""
+    dbt-martmaker builds marts, it doesn't match against other marts."""
     nodes = {}
     nodes.update(make_model("stg_payments", "staging"))
     nodes["model.test_project.fct_orders"] = {

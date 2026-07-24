@@ -32,7 +32,7 @@
   <!-- col 2: ask agent -->
   <rect class="box" x="175" y="85" width="165" height="70" rx="8"/>
   <text class="title" x="257" y="108" text-anchor="middle">Ask your agent to</text>
-  <text class="title" x="257" y="124" text-anchor="middle">run dbt-martsmith</text>
+  <text class="title" x="257" y="124" text-anchor="middle">run dbt-martmaker</text>
   <text class="sub" x="257" y="142" text-anchor="middle">grounds vs. target/manifest.json</text>
 
   <line class="arrow" x1="340" y1="105" x2="363" y2="46"/>

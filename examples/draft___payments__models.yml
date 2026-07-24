@@ -1,4 +1,4 @@
-# DBT-MARTSMITH DRAFT -- generated from churn-metrics.csv on
+# DBT-MARTMAKER DRAFT -- generated from churn-metrics.csv on
 # 2026-07-22T21:20:06+02:00. Not wired into the project until a human
 # reviews it, drops the draft__ prefix, and moves it into the real
 # models/marts/ property file.
