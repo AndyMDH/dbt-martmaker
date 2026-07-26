@@ -9,35 +9,64 @@ naming_convention_detected_from: <dbt-bouncer.yml | sampled:models/marts | none>
 
 ## Summary
 
-| Metric | Column used | Description | Proposed calculation | Proposed tests | Importance | Status |
-|---|---|---|---|---|---|---|
-| <metric name> | <matched model, or blank> | <description column> | <your inferred calculation> | <e.g. not_null, or "custom: not_negative", or "none (low importance)"> | <low \| medium \| high> | <Matched \| Ambiguous \| Blocked> |
+| Metric | Column used | Description | Proposed calculation | Grain | Proposed tests | Importance | Status |
+|---|---|---|---|---|---|---|---|
+| <metric name> | <matched model, or blank> | <description column> | <your inferred calculation> | <one row per ___, or "undecided — see open questions"> | <e.g. not_null, or "custom: not_negative", or "none (low importance)"> | <low \| medium \| high> | <Matched \| Ambiguous \| Blocked> |
 <!-- one row per metric, same order as the sheet -->
 
 ## <Metric name>
 - Description: <description column>
 - Reasoning (stakeholder, verbatim): <reasoning column>
 - Proposed calculation (your inference — confirm before building): <derived from reasoning + grounded columns>
+- Grain (your inference — confirm before building): one row per <___>
 - Proposed tests: <list, noting which reuse an existing project test vs. a built-in — see AGENTS.md Step 5>
 - Importance: <low | medium | high>
 - Grounding: <matched "<model>" | ambiguous - candidates: [...] | blocked - no matching staging/intermediate model found>
 - Status: <Matched | Ambiguous | Blocked>
 
+**What the output would look like** *(fake data — shape only, no query was run)*:
+
+| <column> | <column> |
+|---|---|
+| <plausible fake value> | <plausible fake value> |
+<!-- 3–5 rows; real column names from the grounded model, invented values,
+     shaped to your grain inference. Required for every Matched/resolved row. -->
+
+<!-- If the grain is undecided, replace the single preview with 2–3 labeled
+     alternatives, each a 2–3 row fake-data table:
+
+**Option A — one row total** *(fake data)*:
+| avg_payment_amount |
+|---|
+| 52.40 |
+
+**Option B — one row per customer** *(fake data)*:
+| customer_id | avg_payment_amount |
+|---|---|
+| 1042 | 48.20 |
+| 1043 | 61.10 |
+
+...and add "Which of these is the table you pictured for <metric>?" to
+Open questions. -->
+
 <!-- repeat one section per metric row -->
 
 ## Proposed changes (once approved)
-- New: `draft__<name>.sql` (grain: <inferred grain statement>) —
+- New: `draft__<name>.sql` (grain: one row per <___>) —
   tests calibrated to <importance>
 - schema.yml: description from Description, tests/freshness per the
   importance-based rules in AGENTS.md Step 5
 
 ## Open questions
-- [ ] <one line per Ambiguous/Blocked row, or any other unresolved item>
+- [ ] <one line per Ambiguous/Blocked row, per undecided grain ("Which of
+  the option tables above is the one you pictured for <metric>?"), or any
+  other unresolved item>
 
 ## Next steps
 1. Resolve open questions above.
 2. **Reply to approve** — nothing has been built yet, and the calculation
    above is an inference, not what the stakeholder literally wrote. Once
    you confirm, the draft SQL/schema.yml files get written for review.
+   Rows with an undecided grain stay unbuilt until you pick an option.
 3. After that: rename (drop the `draft__` prefix), move into the real
    `models/marts/...` directory, and run `dbt parse`/`dbt-bouncer` locally.

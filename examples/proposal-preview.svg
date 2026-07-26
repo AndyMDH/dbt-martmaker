@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 410" font-family="Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1010 410" font-family="Helvetica, Arial, sans-serif">
   <style>
     .header-bg { fill: #f6f8fa; }
     .row-a { fill: #ffffff; }
@@ -17,107 +17,115 @@
     .pill-blocked { fill: #ffebe9; } .pill-blocked-t { fill: #cf222e; }
   </style>
 
-  <rect x="20" y="20" width="810" height="364" fill="none" class="border" rx="6"/>
+  <rect x="20" y="20" width="970" height="364" fill="none" class="border" rx="6"/>
 
   <!-- header -->
-  <rect x="20" y="20" width="810" height="34" class="header-bg" rx="6"/>
-  <rect x="20" y="42" width="810" height="12" class="header-bg"/>
+  <rect x="20" y="20" width="970" height="34" class="header-bg" rx="6"/>
+  <rect x="20" y="42" width="970" height="12" class="header-bg"/>
   <text class="header-text" x="30" y="42">Metric</text>
   <text class="header-text" x="150" y="42">Column used</text>
-  <text class="header-text" x="240" y="42">Description</text>
-  <text class="header-text" x="400" y="42">Proposed calc.</text>
-  <text class="header-text" x="570" y="42">Tests</text>
-  <text class="header-text" x="680" y="42">Importance</text>
-  <text class="header-text" x="755" y="42">Status</text>
+  <text class="header-text" x="245" y="42">Description</text>
+  <text class="header-text" x="405" y="42">Proposed calc.</text>
+  <text class="header-text" x="560" y="42">Grain</text>
+  <text class="header-text" x="710" y="42">Tests</text>
+  <text class="header-text" x="825" y="42">Importance</text>
+  <text class="header-text" x="915" y="42">Status</text>
 
   <!-- column separators -->
   <line x1="140" y1="20" x2="140" y2="384" class="border"/>
-  <line x1="230" y1="20" x2="230" y2="384" class="border"/>
-  <line x1="390" y1="20" x2="390" y2="384" class="border"/>
-  <line x1="560" y1="20" x2="560" y2="384" class="border"/>
-  <line x1="670" y1="20" x2="670" y2="384" class="border"/>
-  <line x1="745" y1="20" x2="745" y2="384" class="border"/>
+  <line x1="235" y1="20" x2="235" y2="384" class="border"/>
+  <line x1="395" y1="20" x2="395" y2="384" class="border"/>
+  <line x1="550" y1="20" x2="550" y2="384" class="border"/>
+  <line x1="700" y1="20" x2="700" y2="384" class="border"/>
+  <line x1="815" y1="20" x2="815" y2="384" class="border"/>
+  <line x1="902" y1="20" x2="902" y2="384" class="border"/>
 
   <!-- row 1: Payment count -->
-  <rect x="20" y="54" width="810" height="66" class="row-a"/>
-  <line x1="20" y1="54" x2="830" y2="54" class="border"/>
+  <rect x="20" y="54" width="970" height="66" class="row-a"/>
+  <line x1="20" y1="54" x2="990" y2="54" class="border"/>
   <text class="cell-text" x="30" y="91">Payment count</text>
   <text class="cell-code" x="150" y="91">stg_payments</text>
-  <text class="cell-text" x="240" y="83">Number of payments</text>
-  <text class="cell-text" x="240" y="98">processed</text>
-  <text class="cell-muted" x="400" y="83">count of rows in</text>
-  <text class="cell-muted" x="400" y="98">stg_payments</text>
-  <text class="cell-muted" x="570" y="83">none (low</text>
-  <text class="cell-muted" x="570" y="98">importance)</text>
-  <rect x="675" y="79" width="52" height="20" rx="10" class="pill-low"/>
-  <text class="pill pill-low-t" x="701" y="93" text-anchor="middle">low</text>
-  <rect x="750" y="79" width="66" height="20" rx="10" class="pill-matched"/>
-  <text class="pill pill-matched-t" x="783" y="93" text-anchor="middle">Matched</text>
+  <text class="cell-text" x="245" y="83">Number of payments</text>
+  <text class="cell-text" x="245" y="98">processed</text>
+  <text class="cell-muted" x="405" y="83">count of rows in</text>
+  <text class="cell-muted" x="405" y="98">stg_payments</text>
+  <text class="cell-muted" x="560" y="83">undecided —</text>
+  <text class="cell-muted" x="560" y="98">pick option A or B</text>
+  <text class="cell-muted" x="710" y="83">none (low</text>
+  <text class="cell-muted" x="710" y="98">importance)</text>
+  <rect x="832" y="79" width="52" height="20" rx="10" class="pill-low"/>
+  <text class="pill pill-low-t" x="858" y="93" text-anchor="middle">low</text>
+  <rect x="913" y="79" width="66" height="20" rx="10" class="pill-matched"/>
+  <text class="pill pill-matched-t" x="946" y="93" text-anchor="middle">Matched</text>
 
   <!-- row 2: Average payment amount -->
-  <rect x="20" y="120" width="810" height="66" class="row-b"/>
-  <line x1="20" y1="120" x2="830" y2="120" class="border"/>
+  <rect x="20" y="120" width="970" height="66" class="row-b"/>
+  <line x1="20" y1="120" x2="990" y2="120" class="border"/>
   <text class="cell-text" x="30" y="149">Average payment</text>
   <text class="cell-text" x="30" y="164">amount</text>
   <text class="cell-code" x="150" y="157">stg_payments</text>
-  <text class="cell-text" x="240" y="149">Average dollar amount</text>
-  <text class="cell-text" x="240" y="164">per payment</text>
-  <text class="cell-muted" x="400" y="149">avg(amount) in</text>
-  <text class="cell-muted" x="400" y="164">stg_payments</text>
-  <text class="cell-muted" x="570" y="149">not_null,</text>
-  <text class="cell-muted" x="570" y="164">not_negative*</text>
-  <rect x="669" y="145" width="64" height="20" rx="10" class="pill-high"/>
-  <text class="pill pill-high-t" x="701" y="159" text-anchor="middle">high</text>
-  <rect x="750" y="145" width="66" height="20" rx="10" class="pill-matched"/>
-  <text class="pill pill-matched-t" x="783" y="159" text-anchor="middle">Matched</text>
+  <text class="cell-text" x="245" y="149">Average dollar amount</text>
+  <text class="cell-text" x="245" y="164">per payment</text>
+  <text class="cell-muted" x="405" y="149">avg(amount) in</text>
+  <text class="cell-muted" x="405" y="164">stg_payments</text>
+  <text class="cell-text" x="560" y="157">one row total</text>
+  <text class="cell-muted" x="710" y="149">not_null,</text>
+  <text class="cell-muted" x="710" y="164">not_negative*</text>
+  <rect x="826" y="145" width="64" height="20" rx="10" class="pill-high"/>
+  <text class="pill pill-high-t" x="858" y="159" text-anchor="middle">high</text>
+  <rect x="913" y="145" width="66" height="20" rx="10" class="pill-matched"/>
+  <text class="pill pill-matched-t" x="946" y="159" text-anchor="middle">Matched</text>
 
   <!-- row 3: Monthly churned users -->
-  <rect x="20" y="186" width="810" height="66" class="row-a"/>
-  <line x1="20" y1="186" x2="830" y2="186" class="border"/>
+  <rect x="20" y="186" width="970" height="66" class="row-a"/>
+  <line x1="20" y1="186" x2="990" y2="186" class="border"/>
   <text class="cell-text" x="30" y="215">Monthly churned</text>
   <text class="cell-text" x="30" y="230">users</text>
   <text class="cell-muted" x="150" y="223">—</text>
-  <text class="cell-text" x="240" y="215">Active in last 30 days</text>
-  <text class="cell-text" x="240" y="230">then inactive</text>
-  <text class="cell-muted" x="400" y="215">— (blocked, see</text>
-  <text class="cell-muted" x="400" y="230">below)</text>
-  <text class="cell-muted" x="570" y="223">—</text>
-  <rect x="669" y="211" width="64" height="20" rx="10" class="pill-high"/>
-  <text class="pill pill-high-t" x="701" y="225" text-anchor="middle">high</text>
-  <rect x="750" y="211" width="60" height="20" rx="10" class="pill-blocked"/>
-  <text class="pill pill-blocked-t" x="780" y="225" text-anchor="middle">Blocked</text>
+  <text class="cell-text" x="245" y="215">Active in last 30 days</text>
+  <text class="cell-text" x="245" y="230">then inactive</text>
+  <text class="cell-muted" x="405" y="215">— (blocked, see</text>
+  <text class="cell-muted" x="405" y="230">below)</text>
+  <text class="cell-muted" x="560" y="223">—</text>
+  <text class="cell-muted" x="710" y="223">—</text>
+  <rect x="826" y="211" width="64" height="20" rx="10" class="pill-high"/>
+  <text class="pill pill-high-t" x="858" y="225" text-anchor="middle">high</text>
+  <rect x="916" y="211" width="60" height="20" rx="10" class="pill-blocked"/>
+  <text class="pill pill-blocked-t" x="946" y="225" text-anchor="middle">Blocked</text>
 
   <!-- row 4: Revenue lost to churn -->
-  <rect x="20" y="252" width="810" height="66" class="row-b"/>
-  <line x1="20" y1="252" x2="830" y2="252" class="border"/>
+  <rect x="20" y="252" width="970" height="66" class="row-b"/>
+  <line x1="20" y1="252" x2="990" y2="252" class="border"/>
   <text class="cell-text" x="30" y="281">Revenue lost to</text>
   <text class="cell-text" x="30" y="296">churn</text>
   <text class="cell-muted" x="150" y="289">—</text>
-  <text class="cell-text" x="240" y="273">Subscription revenue</text>
-  <text class="cell-text" x="240" y="288">from users who churned</text>
-  <text class="cell-text" x="240" y="303">this month</text>
-  <text class="cell-muted" x="400" y="281">— (ambiguous, see</text>
-  <text class="cell-muted" x="400" y="296">below)</text>
-  <text class="cell-muted" x="570" y="289">—</text>
-  <rect x="663" y="277" width="76" height="20" rx="10" class="pill-medium"/>
-  <text class="pill pill-medium-t" x="701" y="291" text-anchor="middle">medium</text>
-  <rect x="745" y="277" width="70" height="20" rx="10" class="pill-ambiguous"/>
-  <text class="pill pill-ambiguous-t" x="780" y="291" text-anchor="middle">Ambiguous</text>
+  <text class="cell-text" x="245" y="273">Subscription revenue</text>
+  <text class="cell-text" x="245" y="288">from users who churned</text>
+  <text class="cell-text" x="245" y="303">this month</text>
+  <text class="cell-muted" x="405" y="281">— (ambiguous, see</text>
+  <text class="cell-muted" x="405" y="296">below)</text>
+  <text class="cell-muted" x="560" y="289">—</text>
+  <text class="cell-muted" x="710" y="289">—</text>
+  <rect x="820" y="277" width="76" height="20" rx="10" class="pill-medium"/>
+  <text class="pill pill-medium-t" x="858" y="291" text-anchor="middle">medium</text>
+  <rect x="911" y="277" width="70" height="20" rx="10" class="pill-ambiguous"/>
+  <text class="pill pill-ambiguous-t" x="946" y="291" text-anchor="middle">Ambiguous</text>
 
   <!-- row 5: Marketing ROI -->
-  <rect x="20" y="318" width="810" height="66" class="row-a"/>
-  <line x1="20" y1="318" x2="830" y2="318" class="border"/>
+  <rect x="20" y="318" width="970" height="66" class="row-a"/>
+  <line x1="20" y1="318" x2="990" y2="318" class="border"/>
   <text class="cell-text" x="30" y="355">Marketing ROI</text>
   <text class="cell-muted" x="150" y="355">—</text>
-  <text class="cell-text" x="240" y="347">How efficient our</text>
-  <text class="cell-text" x="240" y="362">marketing spend is</text>
-  <text class="cell-muted" x="400" y="347">— (blocked, see</text>
-  <text class="cell-muted" x="400" y="362">below)</text>
-  <text class="cell-muted" x="570" y="355">—</text>
-  <rect x="663" y="343" width="76" height="20" rx="10" class="pill-medium"/>
-  <text class="pill pill-medium-t" x="701" y="357" text-anchor="middle">medium</text>
-  <rect x="750" y="343" width="60" height="20" rx="10" class="pill-blocked"/>
-  <text class="pill pill-blocked-t" x="780" y="357" text-anchor="middle">Blocked</text>
+  <text class="cell-text" x="245" y="347">How efficient our</text>
+  <text class="cell-text" x="245" y="362">marketing spend is</text>
+  <text class="cell-muted" x="405" y="347">— (blocked, see</text>
+  <text class="cell-muted" x="405" y="362">below)</text>
+  <text class="cell-muted" x="560" y="355">—</text>
+  <text class="cell-muted" x="710" y="355">—</text>
+  <rect x="820" y="343" width="76" height="20" rx="10" class="pill-medium"/>
+  <text class="pill pill-medium-t" x="858" y="357" text-anchor="middle">medium</text>
+  <rect x="916" y="343" width="60" height="20" rx="10" class="pill-blocked"/>
+  <text class="pill pill-blocked-t" x="946" y="357" text-anchor="middle">Blocked</text>
 
-  <text x="30" y="400" font-size="10" fill="#57606a" font-style="italic">* not_negative: reused from an existing custom test already in this project</text>
+  <text x="30" y="400" font-size="10" fill="#57606a" font-style="italic">* not_negative: reused from an existing custom test already in this project &#8226; grain "undecided" rows show 2&#8211;3 example tables to pick from in the proposal detail</text>
 </svg>

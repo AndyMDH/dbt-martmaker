@@ -49,10 +49,14 @@ which you then approve or correct. Full file:
 questions below it):
 
 <p align="center">
-  <img src="examples/proposal-preview.svg" alt="example proposal summary table" width="850">
+  <img src="examples/proposal-preview.svg" alt="example proposal summary table" width="900">
 </p>
 
-Full file: [`examples/proposal.md`](examples/proposal.md)
+Each proposed metric also gets a small **fake-data preview table** showing
+exactly what the output would look like — and when the grain is unclear
+("just a count of payments"… total ever? per month?), the proposal shows
+2–3 example tables to pick from instead of asking "what granularity do you
+want?". Full file: [`examples/proposal.md`](examples/proposal.md)
 
 **Once approved** — draft SQL + schema.yml, tests scaled to importance and
 reusing an existing custom test where one fits:
@@ -69,8 +73,10 @@ reusing an existing custom test where one fits:
 3. Grounds each candidate against `target/manifest.json` — **matched**,
    **ambiguous**, or **blocked**, never guessed.
 4. Writes a proposal (summary table + per-metric detail, `reasoning` shown
-   verbatim next to its own proposed calculation and tests) and **stops
-   for your approval** — nothing is built yet.
+   verbatim next to its own proposed calculation, a "one row per ___"
+   grain statement, tests, and a fake-data preview of the output table —
+   with 2–3 alternative shapes to pick from when the grain is unclear)
+   and **stops for your approval** — nothing is built yet.
 5. Once approved: writes draft SQL/schema.yml into `.dbt-martmaker/drafts/`,
    tests scaled to each metric's `importance` and reusing an existing
    custom/package test where one already fits.

@@ -88,13 +88,26 @@ column(s): <list>` and stop — do not try to proceed with partial columns.
 
 For each row, read the `reasoning` text and identify what it implies:
 candidate entities/tables it's talking about (these become the reference
-strings you pass to `ground.py` in Step 3), and a rough shape of the
+strings you pass to `ground.py` in Step 3), a rough shape of the
 calculation (this becomes your **Proposed calculation** in Step 4 — an
 inference, not something lifted verbatim from the sheet, since the
-stakeholder never wrote a formula). Working item per row: metric name,
-description text, reasoning text (kept verbatim for the proposal), your
-extracted candidate reference(s), your proposed calculation, and importance
-(`low`/`medium`/`high`, defaulting to `medium` if blank).
+stakeholder never wrote a formula), and the **grain** the stakeholder is
+picturing. Grain signals are usually already in the text — "monthly",
+"each payment", "per customer", "which customers", "this month", "a trend
+over time" — so mine them the same way you mine table candidates:
+
+- Signals present and consistent → commit to that grain as your inference.
+- Signals absent or conflicting → mark the grain **undecided**; Step 4
+  turns it into a multiple-choice question rather than a silent guess.
+
+Express every grain inference in "one row per ___" language ("one row per
+payment", "one row per customer per month", "one row total") — that's the
+phrasing a stakeholder can actually verify, and it's used verbatim in the
+proposal. Working item per row: metric name, description text, reasoning
+text (kept verbatim for the proposal), your extracted candidate
+reference(s), your proposed calculation, your inferred grain (or
+"undecided"), and importance (`low`/`medium`/`high`, defaulting to
+`medium` if blank).
 
 ## Step 2 — Detect mart-layer conventions
 
@@ -159,29 +172,63 @@ read-only.
 Using `templates/proposal.md.tmpl`, write
 `.dbt-martmaker/drafts/<slug>/proposal.md` with `status: proposed` in its
 frontmatter. Start with a **Summary table** (Metric | Column used |
-Description | Proposed calculation | Importance | Status), one row per
-metric in the same order as the sheet — "Column used" is the matched model
-name (or blank for Ambiguous/Blocked), "Proposed calculation" is your
-inference from Step 1, not the raw sheet text. This is the artifact the
-stakeholder actually approves, so it needs to show what they'll recognize,
-not just an engineering status code.
+Description | Proposed calculation | Grain | Importance | Status), one row
+per metric in the same order as the sheet — "Column used" is the matched
+model name (or blank for Ambiguous/Blocked), "Proposed calculation" is
+your inference from Step 1, not the raw sheet text, and "Grain" is your
+Step 1 grain inference in "one row per ___" form (or "undecided — see
+open questions"). This is the artifact the stakeholder actually approves,
+so it needs to show what they'll recognize, not just an engineering status
+code.
 
 Then one section per metric row with the full detail: description, the
 stakeholder's **reasoning** (verbatim, never edited), your **proposed
-calculation** (clearly labeled as your inference, not theirs), importance,
+calculation** (clearly labeled as your inference, not theirs), the
+**grain** ("one row per ___", labeled as your inference), importance,
 grounding result and status (Matched/Ambiguous/Blocked), and — for
-Matched/resolved rows — the proposed new mart file path and a one-line
-grain statement.
+Matched/resolved rows — the proposed new mart file path.
 
-Every row that is `ambiguous` (and unresolved) or `blocked` becomes an Open
-Questions checklist line. Never omit a row because it was hard to resolve.
+**Preview table (required for every Matched/resolved row).** Under the
+metric's detail section, render a small markdown table — 3–5 rows of
+*fake but realistic* data — showing exactly what the output would look
+like: real column names from the grounded model, plausible invented
+values, the actual shape implied by your grain inference. Mark it clearly
+as illustrative (e.g. a "(fake data — shape only)" caption). A stakeholder
+who can't read SQL can still recognize whether this is the table they
+pictured — the preview is what makes their approval mean something. Never
+use real warehouse data here: grounding is metadata-only and the preview
+must not imply a query was run.
+
+**Grain-undecided rows: show alternatives, don't ask an abstract
+question.** If Step 1 left the grain undecided for an otherwise Matched
+row, render two or three candidate preview tables side by side — e.g.
+(a) one row total, (b) one row per customer, (c) one row per month — each
+a 2–3 row fake-data table, and add an Open Questions line asking the
+stakeholder to pick one: *"Which of these is the table you pictured for
+<metric>?"* Picking between concrete tables is a question anyone can
+answer; "what granularity do you want?" is not. Only do this when the
+reasoning genuinely doesn't settle it — if the text already says
+"monthly", infer monthly and state it; don't ask about things the
+stakeholder already answered. If you're running interactively and have a
+question tool available (e.g. AskUserQuestion), you may additionally ask
+the grain choice directly with the candidate tables as previews — but the
+proposal file must still contain the alternatives and the Open Questions
+line, so the choice survives outside the conversation.
+
+Every row that is `ambiguous` (and unresolved) or `blocked`, and every
+grain left undecided, becomes an Open Questions checklist line. Never omit
+a row because it was hard to resolve. A row with an undecided grain is not
+buildable in Step 5, even if approved wholesale — the grain choice is part
+of what approval means.
 
 This is where you stop (see "Two-phase flow" above) — do not proceed to
 Step 5 in the same turn unless the human has already told you to build it.
 
 ## Step 5 — Draft skeleton model files (only after approval)
 
-Only for rows that ended up Matched or resolved-Ambiguous. For each:
+Only for rows that ended up Matched or resolved-Ambiguous **and** have a
+decided grain (inferred in Step 1 or picked by the stakeholder from the
+Step 4 alternatives). For each:
 
 - Write `.dbt-martmaker/drafts/<slug>/models/draft__<name>.sql` using
   `templates/model.sql.tmpl`, with the detected marts naming convention
