@@ -19,9 +19,9 @@ naming_convention_detected_from: dbt-bouncer.yml
 
 ## Payment count
 - Description: Number of payments processed
-- Reasoning (stakeholder, verbatim): just a count of payments
+- Reasoning (stakeholder, verbatim): want a sense of volume ahead of renegotiating fees with our payment provider
 - Proposed calculation (inference — confirm before building): count of rows in `stg_payments`
-- Grain (inference — confirm before building): **undecided** — "just a count of payments" doesn't say over what period, so pick from the options below
+- Grain (inference — confirm before building): **undecided** — "a sense of volume" doesn't say over what period, so pick from the options below
 - Proposed tests: none — importance is low, so only the description gets drafted (see AGENTS.md Step 5)
 - Importance: low
 - Grounding: matched `stg_payments` (models/staging/stripe/stg_payments.sql) — confirmed via manifest, score 1.0
@@ -43,10 +43,10 @@ naming_convention_detected_from: dbt-bouncer.yml
 
 ## Average payment amount
 - Description: Average dollar amount per payment
-- Reasoning (stakeholder, verbatim): average how much each payment is for - amounts should never be null or negative
+- Reasoning (stakeholder, verbatim): I quote this in pricing reviews so it has to be right - refunds have skewed it negative before
 - Proposed calculation (inference — confirm before building): `avg(amount)` across all rows in `stg_payments`
-- Grain (inference — confirm before building): one row total — the reasoning reads as one overall average, with no per-period or per-customer signal
-- Proposed tests: `not_null` (explicit in reasoning) + `not_negative` — this project already has that custom test (used twice elsewhere), reused here instead of a generic substitute (see AGENTS.md Step 5)
+- Grain (inference — confirm before building): one row total — a single number quoted in pricing reviews, with no per-period or per-customer signal
+- Proposed tests: `not_null` (importance is high and the calculation depends entirely on `amount`) + `not_negative` (the reasoning says refunds have skewed this negative before) — this project already has that custom test (used twice elsewhere), reused here instead of a generic substitute (see AGENTS.md Step 5)
 - Importance: high
 - Grounding: matched `stg_payments` (models/staging/stripe/stg_payments.sql) — confirmed via manifest, score 1.0
 - Status: Matched
@@ -59,7 +59,7 @@ naming_convention_detected_from: dbt-bouncer.yml
 
 ## Monthly churned users
 - Description: Active in last 30 days then inactive
-- Reasoning (stakeholder, verbatim): count of users who stopped logging in over the last month based on our login/activity data
+- Reasoning (stakeholder, verbatim): board asks about churn every quarter - we should see it in our login/activity data
 - Proposed calculation: not proposed — no source to calculate against
 - Grain: — (nothing to shape yet)
 - Proposed tests: not proposed — nothing to attach a test to yet
@@ -69,7 +69,7 @@ naming_convention_detected_from: dbt-bouncer.yml
 
 ## Revenue lost to churn
 - Description: Subscription revenue from users who churned this month
-- Reasoning (stakeholder, verbatim): total subscription revenue from people who churned this month using our subscriptions data
+- Reasoning (stakeholder, verbatim): making the case for a retention push - the money side of churn, from our subscriptions data
 - Proposed calculation: not proposed yet — depends on which "subscriptions" model is correct
 - Grain: — (decided once the source is; "this month" suggests one row per month)
 - Proposed tests: not proposed yet — same reason
@@ -79,7 +79,7 @@ naming_convention_detected_from: dbt-bouncer.yml
 
 ## Marketing ROI
 - Description: How efficient our marketing spend is
-- Reasoning (stakeholder, verbatim): compare what we spent on ads against the revenue it brought in - probably need ad spend and revenue numbers
+- Reasoning (stakeholder, verbatim): CMO wants proof the ad budget pays off before next year - ad spend versus revenue it drives
 - Proposed calculation: not proposed — no source for ad spend/marketing data
 - Grain: — (nothing to shape yet)
 - Proposed tests: not proposed — nothing to attach a test to yet
@@ -90,8 +90,8 @@ naming_convention_detected_from: dbt-bouncer.yml
 ## Proposed changes (once approved)
 - New: `draft__rpt_avg_payment_amount.sql` (grain: one row total, aggregate) —
   `not_null` + the project's existing `not_negative` custom test, since
-  importance is high and the reasoning explicitly ruled out null/negative
-  values. See [`draft__rpt_avg_payment_amount.sql`](draft__rpt_avg_payment_amount.sql)
+  importance is high and the reasoning flags negative refund amounts as a
+  known past problem. See [`draft__rpt_avg_payment_amount.sql`](draft__rpt_avg_payment_amount.sql)
   and [`draft___payments__models.yml`](draft___payments__models.yml) for
   what these actually look like once built.
 - Pending: `draft__rpt_payment_count.sql` — stays unbuilt until the grain

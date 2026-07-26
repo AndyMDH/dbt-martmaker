@@ -38,7 +38,9 @@
   <text class="cell-text" x="34" y="88">Payment count</text>
   <text class="cell-text" x="184" y="88">Number of payments</text>
   <text class="cell-text" x="184" y="103">processed</text>
-  <text class="cell-text-muted" x="374" y="88">just a count of payments</text>
+  <text class="cell-text-muted" x="374" y="78">want a sense of volume ahead of</text>
+  <text class="cell-text-muted" x="374" y="93">renegotiating fees with our</text>
+  <text class="cell-text-muted" x="374" y="108">payment provider</text>
   <rect x="694" y="74" width="52" height="20" rx="10" class="pill-low"/>
   <text class="pill-label pill-low-text" x="720" y="88" text-anchor="middle">low</text>
 
@@ -49,9 +51,9 @@
   <text class="cell-text" x="34" y="157">amount</text>
   <text class="cell-text" x="184" y="142">Average dollar amount</text>
   <text class="cell-text" x="184" y="157">per payment</text>
-  <text class="cell-text-muted" x="374" y="142">average how much each payment is</text>
-  <text class="cell-text-muted" x="374" y="157">for - amounts should never be</text>
-  <text class="cell-text-muted" x="374" y="172">null or negative</text>
+  <text class="cell-text-muted" x="374" y="142">I quote this in pricing reviews</text>
+  <text class="cell-text-muted" x="374" y="157">so it has to be right - refunds</text>
+  <text class="cell-text-muted" x="374" y="172">have skewed it negative before</text>
   <rect x="688" y="138" width="64" height="20" rx="10" class="pill-high"/>
   <text class="pill-label pill-high-text" x="720" y="152" text-anchor="middle">high</text>
 
@@ -62,9 +64,9 @@
   <text class="cell-text" x="34" y="221">users</text>
   <text class="cell-text" x="184" y="206">Active in last 30 days</text>
   <text class="cell-text" x="184" y="221">then inactive</text>
-  <text class="cell-text-muted" x="374" y="206">stopped logging in over the last</text>
-  <text class="cell-text-muted" x="374" y="221">month, based on our login/</text>
-  <text class="cell-text-muted" x="374" y="236">activity data</text>
+  <text class="cell-text-muted" x="374" y="206">board asks about churn every</text>
+  <text class="cell-text-muted" x="374" y="221">quarter - we should see it in</text>
+  <text class="cell-text-muted" x="374" y="236">our login/activity data</text>
   <rect x="688" y="202" width="64" height="20" rx="10" class="pill-high"/>
   <text class="pill-label pill-high-text" x="720" y="216" text-anchor="middle">high</text>
 
@@ -75,9 +77,9 @@
   <text class="cell-text" x="34" y="285">churn</text>
   <text class="cell-text" x="184" y="270">Subscription revenue from</text>
   <text class="cell-text" x="184" y="285">users who churned this month</text>
-  <text class="cell-text-muted" x="374" y="270">total subscription revenue from</text>
-  <text class="cell-text-muted" x="374" y="285">people who churned this month,</text>
-  <text class="cell-text-muted" x="374" y="300">using our subscriptions data</text>
+  <text class="cell-text-muted" x="374" y="270">making the case for a retention</text>
+  <text class="cell-text-muted" x="374" y="285">push - the money side of churn,</text>
+  <text class="cell-text-muted" x="374" y="300">from our subscriptions data</text>
   <rect x="682" y="266" width="76" height="20" rx="10" class="pill-medium"/>
   <text class="pill-label pill-medium-text" x="720" y="280" text-anchor="middle">medium</text>
 
@@ -87,9 +89,9 @@
   <text class="cell-text" x="34" y="344">Marketing ROI</text>
   <text class="cell-text" x="184" y="334">How efficient our</text>
   <text class="cell-text" x="184" y="349">marketing spend is</text>
-  <text class="cell-text-muted" x="374" y="334">compare ad spend against the</text>
-  <text class="cell-text-muted" x="374" y="349">revenue it brought in - probably</text>
-  <text class="cell-text-muted" x="374" y="364">need spend and revenue data</text>
+  <text class="cell-text-muted" x="374" y="334">CMO wants proof the ad budget</text>
+  <text class="cell-text-muted" x="374" y="349">pays off before next year - ad</text>
+  <text class="cell-text-muted" x="374" y="364">spend versus revenue it drives</text>
   <rect x="682" y="330" width="76" height="20" rx="10" class="pill-medium"/>
   <text class="pill-label pill-medium-text" x="720" y="344" text-anchor="middle">medium</text>
 </svg>

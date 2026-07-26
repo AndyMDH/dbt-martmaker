@@ -6,8 +6,8 @@
 --
 -- Metric: Average payment amount
 -- Description: Average dollar amount per payment
--- Reasoning (stakeholder, verbatim): average how much each payment is
--- for - amounts should never be null or negative
+-- Reasoning (stakeholder, verbatim): I quote this in pricing reviews so
+-- it has to be right - refunds have skewed it negative before
 -- Proposed calculation (inferred, approved before this file was built):
 -- avg(amount) grouped across all payments in stg_payments
 

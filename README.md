@@ -40,9 +40,10 @@ SQL:
   <img src="examples/sheet-preview.svg" alt="example metric sheet" width="780">
 </p>
 
-`reasoning` is deliberately loose — no SQL, no table names required. It's
-what the skill mines to *propose* the matched columns and calculation,
-which you then approve or correct. Full file:
+`reasoning` is the stakeholder's *why* — the decision the metric feeds,
+who's asking — not a formula. No SQL, no table names required: the skill
+mines the incidental hints ("from our subscriptions data") to *propose*
+the matched columns and calculation, which you then approve or correct. Full file:
 [`examples/churn-metrics.csv`](examples/churn-metrics.csv)
 
 **Output** — a proposal (this is the Summary table; full detail plus open
@@ -54,8 +55,8 @@ questions below it):
 
 Each proposed metric also gets a small **fake-data preview table** showing
 exactly what the output would look like — and when the grain is unclear
-("just a count of payments"… total ever? per month?), the proposal shows
-2–3 example tables to pick from instead of asking "what granularity do you
+("a sense of volume"… total ever? per month?), the proposal shows 2–3
+example tables to pick from instead of asking "what granularity do you
 want?". Full file: [`examples/proposal.md`](examples/proposal.md)
 
 **Once approved** — draft SQL + schema.yml, tests scaled to importance and

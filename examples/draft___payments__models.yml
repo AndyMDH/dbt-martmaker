@@ -3,16 +3,11 @@
 # reviews it, drops the draft__ prefix, and moves it into the real
 # models/marts/ property file.
 
-models:
-  - name: draft__rpt_payment_count
-    description: "Number of payments processed"
-    meta:
-      source_sheet: churn-metrics.csv
-      date: 2026-07-22
-      importance: low
-    columns: []
-    # importance: low -> description only, no drafted tests (see AGENTS.md Step 5)
+# Payment count is NOT drafted here: its grain was left undecided in the
+# proposal (Option A or B), and grain-undecided rows stay unbuilt until
+# the stakeholder picks one -- even though the rest was approved.
 
+models:
   - name: draft__rpt_avg_payment_amount
     description: "Average dollar amount per payment"
     meta:

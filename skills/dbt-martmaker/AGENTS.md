@@ -27,13 +27,17 @@ with columns: `metric`, `description`, `reasoning`, `importance`.
 
 - `metric` — a short name, e.g. "Marketing ROI".
 - `description` — one line, plain language, what it means.
-- `reasoning` — the stakeholder's own free-form explanation of what they're
-  thinking: what data it probably involves, roughly how they'd calculate
-  it, why they need it. **This is not a formula and not a table name** —
-  it's the raw material *you* (the agent) mine in Steps 1 and 3 to figure
-  out which real columns/tables are involved and what the actual
-  calculation should be. The stakeholder should never have to already know
-  SQL or your project's schema to fill this in.
+- `reasoning` — the stakeholder's own free-form explanation of **why they
+  want this metric**: the decision it feeds, the question it answers, who's
+  asking. It's motivation, not specification — data or calculation hints
+  usually show up only incidentally ("should be in our subscriptions
+  data", "refunds have skewed it before"), and those incidental hints plus
+  the `description` are exactly the raw material *you* (the agent) mine in
+  Steps 1 and 3 to figure out which real columns/tables are involved and
+  what the actual calculation should be. **This is not a formula and not a
+  table name** — if a reasoning cell reads like a computation recipe, the
+  stakeholder is doing your job; they should never need SQL or your
+  project's schema to fill this in.
 - `importance` — one of `low`/`medium`/`high`, set by the stakeholder based
   on how critical the metric is. Drives how much test rigor gets drafted in
   Step 5. If blank, treat as `medium` rather than erroring — don't make a
