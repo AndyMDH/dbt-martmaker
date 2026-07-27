@@ -7,8 +7,7 @@
 
   <style>
     .box { fill: #f6f8fa; stroke: #57606a; stroke-width: 1.5; }
-    .final { fill: #ddf4ff; stroke: #0969da; stroke-width: 1.5; }
-    .pending { fill: #fbefff; stroke: #8250df; stroke-width: 1.5; }
+    .pending { fill: #ffedd5; stroke: #c2410c; stroke-width: 1.5; }
     .matched { fill: #dafbe1; stroke: #1a7f37; }
     .ambiguous { fill: #fff8c5; stroke: #9a6700; }
     .blocked { fill: #ffebe9; stroke: #cf222e; }
@@ -18,7 +17,7 @@
     .small-sub { font-size: 9px; fill: #57606a; }
     .arrow { stroke: #57606a; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
     .note { font-size: 11px; fill: #57606a; font-style: italic; }
-    .gate-note { font-size: 10px; fill: #8250df; font-weight: 700; }
+    .gate-note { font-size: 10px; fill: #c2410c; font-weight: 700; }
   </style>
 
   <!-- col 1: metric sheet -->
@@ -58,7 +57,7 @@
 
   <!-- col 4: proposal (the approval gate) -->
   <rect class="box pending" x="520" y="70" width="170" height="100" rx="8"/>
-  <text class="title" x="605" y="98" text-anchor="middle" fill="#8250df">proposal.md</text>
+  <text class="title" x="605" y="98" text-anchor="middle" fill="#c2410c">proposal.md</text>
   <text class="sub" x="605" y="116" text-anchor="middle">summary table +</text>
   <text class="sub" x="605" y="128" text-anchor="middle">per-metric detail</text>
   <text class="sub" x="605" y="146" text-anchor="middle">nothing built yet</text>
@@ -77,9 +76,9 @@
   <line class="arrow" x1="900" y1="120" x2="923" y2="120"/>
 
   <!-- col 6: human review -->
-  <rect class="box final" x="925" y="70" width="165" height="100" rx="8"/>
-  <text class="title" x="1007" y="105" text-anchor="middle" fill="#0969da">You review</text>
-  <text class="title" x="1007" y="121" text-anchor="middle" fill="#0969da">&amp; promote</text>
+  <rect class="box" x="925" y="70" width="165" height="100" rx="8"/>
+  <text class="title" x="1007" y="105" text-anchor="middle">You review</text>
+  <text class="title" x="1007" y="121" text-anchor="middle">&amp; promote</text>
   <text class="sub" x="1007" y="141" text-anchor="middle">into models/marts/</text>
 
   <text class="note" x="555" y="245" text-anchor="middle">nothing is committed or built automatically at any step</text>
