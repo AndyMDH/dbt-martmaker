@@ -27,13 +27,10 @@
 git clone https://github.com/AndyMDH/dbt-martmaker.git && ./dbt-martmaker/install.sh
 ```
 
-- No package registry involved — `install.sh` just puts
-  `skills/dbt-martmaker/` into `~/.claude/skills/` (or a project's
-  `.claude/skills/`), symlinked by default so `git pull` keeps it current.
-- Copying that one folder there by hand works identically; `--copy` mode
-  or `--project` scope it to a copy or a single repo instead.
-- Requires a dbt project with `target/manifest.json` (`dbt parse`), and an
-  agent that reads Claude Code skills or `AGENTS.md`.
+Symlinks `skills/dbt-martmaker/` into `~/.claude/skills/` (`--project` for
+one repo only, `--copy` instead of a symlink) — or skip the script and
+copy that folder there yourself. Requires a dbt project with
+`target/manifest.json` (`dbt parse`).
 
 ## Quickstart
 
@@ -42,19 +39,27 @@ git clone https://github.com/AndyMDH/dbt-martmaker.git && ./dbt-martmaker/instal
 > Set up a dbt-martmaker metric sheet for churn metrics, then run it.
 
 That scaffolds `.dbt-martmaker/sheets/churn-metrics.csv` — one row per
-metric, in the stakeholder's own words, not SQL:
+metric, in the stakeholder's own words, not SQL. Two rows from the full
+example ([`examples/churn-metrics.csv`](examples/churn-metrics.csv)):
 
-<p align="center">
-  <img src="examples/sheet-preview.svg" alt="example metric sheet" width="780">
-</p>
+| metric | reasoning | importance |
+|---|---|---|
+| Average payment amount | I quote this in pricing reviews so it has to be right — refunds have skewed it negative before | high |
+| Monthly churned users | board asks about churn every quarter — we should see it in our login/activity data | high |
 
-- Each candidate table/column is grounded against `target/manifest.json`
-  — **matched**, **ambiguous**, or **blocked**, never guessed.
-- A proposal is written and **stops for your approval** before anything
-  is drafted.
+Each candidate table/column is then grounded against `target/manifest.json`
+— **matched**, **ambiguous**, or **blocked**, never guessed — and a
+proposal is written that **stops for your approval** before anything is
+drafted. Same two metrics, from the proposal's summary table
+([`examples/proposal.md`](examples/proposal.md)):
 
-Full walkthrough, including the proposal and drafted SQL/schema.yml:
-[`docs/USAGE.md`](docs/USAGE.md).
+| metric | proposed calculation | importance | status |
+|---|---|---|---|
+| Average payment amount | `avg(amount)` in `stg_payments` | high | Matched |
+| Monthly churned users | — (blocked, no source found) | high | Blocked |
+
+Full walkthrough — all 5 example rows, the complete proposal, and the
+drafted SQL/schema.yml once approved: [`docs/USAGE.md`](docs/USAGE.md).
 
 ## Scope
 
