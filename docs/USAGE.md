@@ -1,12 +1,9 @@
 # Usage
 
+See the README's [Quickstart](../README.md#quickstart) for the example
+metric sheet and proposal summary table. This doc picks up from there.
+
 ## The metric sheet
-
-One row per metric, in the stakeholder's own words, not SQL:
-
-<p align="center">
-  <img src="../examples/sheet-preview.svg" alt="example metric sheet" width="780">
-</p>
 
 `reasoning` is the stakeholder's *why* — the decision the metric feeds,
 who's asking — not a formula. No SQL, no table names required: the skill
@@ -16,13 +13,9 @@ Full file: [`../examples/churn-metrics.csv`](../examples/churn-metrics.csv)
 
 ## The proposal
 
-This is the Summary table; full detail plus open questions follow it:
-
-<p align="center">
-  <img src="../examples/proposal-preview.svg" alt="example proposal summary table" width="900">
-</p>
-
-Each proposed metric also gets a small **fake-data preview table** showing
+The README shows the Summary table; full per-metric detail plus open
+questions follow it in the real output. Each proposed metric also gets a
+small **fake-data preview table** showing
 exactly what the output would look like — and when the grain is unclear
 ("a sense of volume"… total ever? per month?), the proposal shows 2–3
 example tables to pick from instead of asking "what granularity do you

@@ -39,27 +39,25 @@ copy that folder there yourself. Requires a dbt project with
 > Set up a dbt-martmaker metric sheet for churn metrics, then run it.
 
 That scaffolds `.dbt-martmaker/sheets/churn-metrics.csv` — one row per
-metric, in the stakeholder's own words, not SQL. Two rows from the full
-example ([`examples/churn-metrics.csv`](examples/churn-metrics.csv)):
+metric, in the stakeholder's own words, not SQL
+([full file](examples/churn-metrics.csv)):
 
-| metric | reasoning | importance |
-|---|---|---|
-| Average payment amount | I quote this in pricing reviews so it has to be right — refunds have skewed it negative before | high |
-| Monthly churned users | board asks about churn every quarter — we should see it in our login/activity data | high |
+<p align="center">
+  <img src="examples/sheet-preview.svg" alt="example metric sheet" width="780">
+</p>
 
 Each candidate table/column is then grounded against `target/manifest.json`
 — **matched**, **ambiguous**, or **blocked**, never guessed — and a
 proposal is written that **stops for your approval** before anything is
-drafted. Same two metrics, from the proposal's summary table
-([`examples/proposal.md`](examples/proposal.md)):
+drafted. This is the proposal's summary table
+([full file](examples/proposal.md)):
 
-| metric | proposed calculation | importance | status |
-|---|---|---|---|
-| Average payment amount | `avg(amount)` in `stg_payments` | high | Matched |
-| Monthly churned users | — (blocked, no source found) | high | Blocked |
+<p align="center">
+  <img src="examples/proposal-preview.svg" alt="example proposal summary table" width="900">
+</p>
 
-Full walkthrough — all 5 example rows, the complete proposal, and the
-drafted SQL/schema.yml once approved: [`docs/USAGE.md`](docs/USAGE.md).
+Full walkthrough — per-metric detail, drafted SQL/schema.yml once
+approved, and the under-the-hood steps: [`docs/USAGE.md`](docs/USAGE.md).
 
 ## Scope
 
