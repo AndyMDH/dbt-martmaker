@@ -3,11 +3,11 @@
 </div>
 
 <p align="center">
-  Describe the metrics you need in plain language — dbt-martmaker checks
-  what already exists in your dbt project and drafts a mart model for you
-  to review. It's an <b>agent skill</b>: instructions your AI coding
-  assistant (Claude Code, etc.) follows directly, not a program you install
-  or a server you run.
+  Turns a metric requirements sheet into a draft dbt mart model
+  (<code>dim_</code>/<code>fct_</code>/<code>rpt_</code>), grounded against
+  your project's own <code>target/manifest.json</code>. An <b>agent
+  skill</b> — instructions Claude Code (or any <code>AGENTS.md</code>-reading
+  agent) follows directly. No package, no server, no CLI binary.
 </p>
 
 <p align="center">
@@ -27,15 +27,13 @@
 git clone https://github.com/AndyMDH/dbt-martmaker.git && ./dbt-martmaker/install.sh
 ```
 
-This isn't a published package (no PyPI/npm equivalent for Claude Code
-skills) — `install.sh` just automates getting `skills/dbt-martmaker/` into
-`~/.claude/skills/` (or a project's `.claude/skills/`). You can just as
-well skip cloning and copy that one folder there by hand; the only thing
-you lose is `install.sh`'s symlink mode, which keeps the skill in sync
-with a `git pull`.
-
-Requires a dbt project with `target/manifest.json` (`dbt parse`), and an
-agent that reads Claude Code skills or `AGENTS.md`.
+- No package registry involved — `install.sh` just puts
+  `skills/dbt-martmaker/` into `~/.claude/skills/` (or a project's
+  `.claude/skills/`), symlinked by default so `git pull` keeps it current.
+- Copying that one folder there by hand works identically; `--copy` mode
+  or `--project` scope it to a copy or a single repo instead.
+- Requires a dbt project with `target/manifest.json` (`dbt parse`), and an
+  agent that reads Claude Code skills or `AGENTS.md`.
 
 ## Quickstart
 
@@ -43,30 +41,31 @@ agent that reads Claude Code skills or `AGENTS.md`.
 
 > Set up a dbt-martmaker metric sheet for churn metrics, then run it.
 
-It scaffolds `.dbt-martmaker/sheets/churn-metrics.csv` and fills it in with
-you — one row per metric, in the stakeholder's own words, not SQL:
+That scaffolds `.dbt-martmaker/sheets/churn-metrics.csv` — one row per
+metric, in the stakeholder's own words, not SQL:
 
 <p align="center">
   <img src="examples/sheet-preview.svg" alt="example metric sheet" width="780">
 </p>
 
-From there it grounds every candidate table/column against your project's
-own `target/manifest.json` (matched, ambiguous, or blocked — never
-guessed) and writes a proposal for you to approve before anything is
-drafted. Full walkthrough, including the proposal and drafted SQL/schema.yml:
+- Each candidate table/column is grounded against `target/manifest.json`
+  — **matched**, **ambiguous**, or **blocked**, never guessed.
+- A proposal is written and **stops for your approval** before anything
+  is drafted.
+
+Full walkthrough, including the proposal and drafted SQL/schema.yml:
 [`docs/USAGE.md`](docs/USAGE.md).
 
-## How it works, briefly
+## Scope
 
 - **Mart layer only** — combines models that already exist in
   `models/staging/`/`models/intermediate/`; a metric needing a genuinely
   new raw source is flagged **blocked**, never attempted.
-- **Grounds, never guesses** — every table/column reference is checked
-  against `target/manifest.json`.
-- **Stops for approval** — a proposal is written first; nothing is drafted
-  into `.dbt-martmaker/drafts/` until you approve it.
 - **Reuses your conventions** — naming/materialization and existing
-  generic tests are detected from your project, not assumed.
+  generic tests (built-in, package, or custom) are detected from your
+  project, not assumed.
+- **Never runs dbt** — no `dbt build`/`run`/`test`; output is a proposal
+  doc plus draft SQL/schema.yml for you to review and promote yourself.
 
 ## Documentation
 
