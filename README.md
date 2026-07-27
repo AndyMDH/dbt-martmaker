@@ -20,6 +20,13 @@
 git clone https://github.com/AndyMDH/dbt-martmaker.git && ./dbt-martmaker/install.sh
 ```
 
+This isn't a published package (no PyPI/npm equivalent for Claude Code
+skills) — `install.sh` just automates getting `skills/dbt-martmaker/` into
+`~/.claude/skills/` (or a project's `.claude/skills/`). You can just as
+well skip cloning and copy that one folder there by hand; the only thing
+you lose is `install.sh`'s symlink mode, which keeps the skill in sync
+with a `git pull`.
+
 Requires a dbt project with `target/manifest.json` (`dbt parse`), and an
 agent that reads Claude Code skills or `AGENTS.md`.
 
