@@ -22,7 +22,7 @@ naming_convention_detected_from: dbt-bouncer.yml
 - Reasoning (stakeholder, verbatim): want a sense of volume ahead of renegotiating fees with our payment provider
 - Proposed calculation (inference — confirm before building): count of rows in `stg_payments`
 - Grain (inference — confirm before building): **undecided** — "a sense of volume" doesn't say over what period, so pick from the options below
-- Proposed tests: none — importance is low, so only the description gets drafted (see AGENTS.md Step 5)
+- Assertions this draft will encode: none — importance is low, so only the description gets drafted (see AGENTS.md Step 6)
 - Importance: low
 - Grounding: matched `stg_payments` (models/staging/stripe/stg_payments.sql) — confirmed via manifest, score 1.0
 - Status: Matched
@@ -46,9 +46,10 @@ naming_convention_detected_from: dbt-bouncer.yml
 - Reasoning (stakeholder, verbatim): I quote this in pricing reviews so it has to be right - refunds have skewed it negative before
 - Proposed calculation (inference — confirm before building): `avg(amount)` across all rows in `stg_payments`
 - Grain (inference — confirm before building): one row total — a single number quoted in pricing reviews, with no per-period or per-customer signal
-- Proposed tests: `not_null` (importance is high and the calculation depends entirely on `amount`) + `not_negative` (the reasoning says refunds have skewed this negative before) — this project already has that custom test (used twice elsewhere), reused here instead of a generic substitute (see AGENTS.md Step 5)
+- Assertions this draft will encode: `not_null` on `amount` (importance is high and the calculation depends entirely on it) + `not_negative` on `amount` (the reasoning says refunds have skewed this negative before) — this project already has that custom test (used twice elsewhere), reused here instead of a generic substitute (see AGENTS.md Step 6)
 - Importance: high
 - Grounding: matched `stg_payments` (models/staging/stripe/stg_payments.sql) — confirmed via manifest, score 1.0
+- Semantic Layer: not checked — this example project has no target/semantic_manifest.json
 - Status: Matched
 
 **What the output would look like** *(fake data — shape only, no query was run)*:
@@ -62,7 +63,7 @@ naming_convention_detected_from: dbt-bouncer.yml
 - Reasoning (stakeholder, verbatim): board asks about churn every quarter - we should see it in our login/activity data
 - Proposed calculation: not proposed — no source to calculate against
 - Grain: — (nothing to shape yet)
-- Proposed tests: not proposed — nothing to attach a test to yet
+- Assertions this draft will encode: not proposed — nothing to attach a test to yet
 - Importance: high
 - Grounding: blocked — no matching staging/intermediate model found for "login/activity data"
 - Status: Blocked
@@ -72,7 +73,7 @@ naming_convention_detected_from: dbt-bouncer.yml
 - Reasoning (stakeholder, verbatim): making the case for a retention push - the money side of churn, from our subscriptions data
 - Proposed calculation: not proposed yet — depends on which "subscriptions" model is correct
 - Grain: — (decided once the source is; "this month" suggests one row per month)
-- Proposed tests: not proposed yet — same reason
+- Assertions this draft will encode: not proposed yet — same reason
 - Importance: medium
 - Grounding: ambiguous for "subscriptions" — candidates: `stg_billing__subscriptions`, `int_billing__subscription_history`
 - Status: Ambiguous
@@ -82,7 +83,7 @@ naming_convention_detected_from: dbt-bouncer.yml
 - Reasoning (stakeholder, verbatim): CMO wants proof the ad budget pays off before next year - ad spend versus revenue it drives
 - Proposed calculation: not proposed — no source for ad spend/marketing data
 - Grain: — (nothing to shape yet)
-- Proposed tests: not proposed — nothing to attach a test to yet
+- Assertions this draft will encode: not proposed — nothing to attach a test to yet
 - Importance: medium
 - Grounding: blocked — no matching staging/intermediate model found for "ad spend" or "marketing spend"
 - Status: Blocked

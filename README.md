@@ -64,6 +64,9 @@ approved, and the under-the-hood steps: [`docs/USAGE.md`](docs/USAGE.md).
 - **Mart layer only** — combines models that already exist in
   `models/staging/`/`models/intermediate/`; a metric needing a genuinely
   new raw source is flagged **blocked**, never attempted.
+- **Checks the dbt Semantic Layer first** — if your project runs
+  MetricFlow, a metric that already exists there is flagged, never
+  silently duplicated as a new physical mart.
 - **Reuses your conventions** — naming/materialization and existing
   generic tests (built-in, package, or custom) are detected from your
   project, not assumed.
