@@ -147,6 +147,49 @@ def test_dbt_mcp_not_configured_when_absent(dbt_project):
     assert ground.dbt_mcp_configured(project_root) is False
 
 
+def test_synonym_match_clients_to_customers(dbt_project):
+    """The exact gap flagged in review: a stakeholder saying "clients"
+    against a project that models stg_customers must not read as blocked."""
+    nodes = {}
+    nodes.update(make_model("stg_customers", "staging"))
+    project_root = dbt_project(nodes)
+
+    manifest = ground.load_manifest(project_root)
+    candidates = ground.staging_and_intermediate_models(manifest)
+    result = ground.ground_one("clients", candidates)
+
+    assert result["status"] == "matched"
+    assert result["model"] == "stg_customers"
+
+
+def test_synonym_match_is_symmetric(dbt_project):
+    nodes = {}
+    nodes.update(make_model("stg_clients", "staging"))
+    project_root = dbt_project(nodes)
+
+    manifest = ground.load_manifest(project_root)
+    candidates = ground.staging_and_intermediate_models(manifest)
+    result = ground.ground_one("customers", candidates)
+
+    assert result["status"] == "matched"
+    assert result["model"] == "stg_clients"
+
+
+def test_synonym_does_not_widen_unrelated_matches(dbt_project):
+    """Regression guard: synonym canonicalization must not accidentally
+    make unrelated terms overlap -- "orders" must still not match a model
+    that's genuinely about something else."""
+    nodes = {}
+    nodes.update(make_model("stg_customers", "staging"))
+    project_root = dbt_project(nodes)
+
+    manifest = ground.load_manifest(project_root)
+    candidates = ground.staging_and_intermediate_models(manifest)
+    result = ground.ground_one("orders", candidates)
+
+    assert result["status"] == "blocked"
+
+
 def test_column_types_attached_when_catalog_present(dbt_project):
     nodes = {}
     nodes.update(make_model("stg_payments", "staging", columns=["payment_id", "amount"]))

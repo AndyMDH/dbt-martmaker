@@ -34,14 +34,36 @@ import re
 import sys
 from pathlib import Path
 
-MATCHED_THRESHOLD = 0.72
-AMBIGUOUS_THRESHOLD = 0.35
+# Deliberately conservative, not tuned per-project: a false "matched" that
+# silently picks the wrong model is worse than an "ambiguous" that asks a
+# human, so every threshold below is set to fail toward asking, not guessing.
+MATCHED_THRESHOLD = 0.72  # top score must clear this to auto-match
+AMBIGUOUS_THRESHOLD = 0.35  # below this, a candidate isn't even shortlisted
 MAX_SHORTLIST = 10
 DESC_ONLY_CEILING = 0.5  # a description mention alone can surface a candidate,
                           # but can never alone be confident enough to auto-match
+# top score must beat the runner-up by this margin to auto-match -- without
+# it, two similarly-named models (stg_orders vs stg_order_items) could tie
+# into a wrong pick instead of surfacing both as ambiguous candidates.
+MATCH_MARGIN = 0.15
 
 STAGING_INTERMEDIATE_PREFIXES = ("models/staging", "models/intermediate")
 LAYER_PREFIXES = {"stg", "int", "dim", "fct", "rpt", "base", "seed"}
+
+# Common analytics-engineering synonyms -- not exhaustive NLP, just the
+# handful of business-term pairs that come up constantly (a stakeholder
+# says "clients", the project's staging model says stg_customers) and would
+# otherwise score zero token overlap despite meaning the same thing. Extend
+# this list for your own domain's vocabulary as real misses turn up.
+SYNONYM_GROUPS = [
+    {"customer", "customers", "client", "clients"},
+    {"order", "orders", "purchase", "purchases"},
+    {"revenue", "sales"},
+    {"user", "users", "member", "members"},
+    {"employee", "employees", "staff"},
+    {"payment", "payments", "transaction", "transactions"},
+]
+_SYNONYM_CANONICAL = {token: min(group) for group in SYNONYM_GROUPS for token in group}
 
 
 def load_manifest(project_root: Path) -> dict:
@@ -128,7 +150,10 @@ def semantic_layer_metrics(project_root: Path) -> list[dict]:
 
 
 def _tokenize(text: str) -> set[str]:
-    return {tok for tok in re.split(r"[^a-z0-9]+", text.lower()) if len(tok) > 2}
+    tokens = {tok for tok in re.split(r"[^a-z0-9]+", text.lower()) if len(tok) > 2}
+    # Canonicalize known synonyms so "clients" and "customers" overlap --
+    # every caller (reference, name, description tokens) gets this for free.
+    return {_SYNONYM_CANONICAL.get(tok, tok) for tok in tokens}
 
 
 def _name_tokens(name: str) -> set[str]:
@@ -193,7 +218,7 @@ def ground_one(reference: str, candidates: list[dict]) -> dict:
 
     top = scored[0]
     second = scored[1]["score"] if len(scored) > 1 else 0.0
-    if top["score"] >= MATCHED_THRESHOLD and (top["score"] - second) >= 0.15:
+    if top["score"] >= MATCHED_THRESHOLD and (top["score"] - second) >= MATCH_MARGIN:
         return {
             "reference": reference,
             "status": "matched",

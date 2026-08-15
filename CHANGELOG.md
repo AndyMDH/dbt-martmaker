@@ -28,6 +28,14 @@ follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   clone-and-script as the primary install path. `install.sh --project`
   remains for a single-repo or non-plugin install.
 - `CHANGELOG.md` (this file).
+- A small synonym map in `ground.py` (`SYNONYM_GROUPS`) so common
+  analytics-engineering term pairs — "clients"/"customers",
+  "orders"/"purchases", "revenue"/"sales" — no longer score zero overlap
+  and read as `blocked` just because the stakeholder's word choice
+  differs from the project's table names. Not general NLP synonymy —
+  a documented, extensible list of the pairs that come up constantly.
+  The four matching thresholds are now also named/commented with why
+  each exists, instead of bare magic numbers.
 
 ### Changed
 - The propose-then-build flow now states, per metric, exactly which
