@@ -204,6 +204,13 @@ stakeholder to confirm whether a materialized copy is still wanted, and
 why (a BI tool that can't query the Semantic Layer directly is a real
 reason; "wasn't aware it already existed" means the answer is probably no).
 
+The match is scored against both the metric's internal `name` and its
+human-readable `label` when the Semantic Layer defines one — a
+stakeholder's own phrasing ("Marketing ROI") often matches a metric's
+`label` even where it shares no tokens with an abbreviated snake_case
+`name` like `mktg_roi_pct`. Refer to whichever one `ground.py` reports as
+the closer match when naming the metric back to the stakeholder.
+
 If `available` is `false`, this project doesn't run a Semantic Layer —
 skip this step's proposal language entirely and proceed as if it doesn't
 exist. Most projects will be in this state; that's expected, not an error.
@@ -229,6 +236,24 @@ calculation** (clearly labeled as your inference, not theirs), the
 grounding result and status (Matched/Ambiguous/Blocked), a Semantic Layer
 note when Step 4 found a match, and — for Matched/resolved rows — the
 proposed new mart file path.
+
+**Ground the calculation in real columns, never a guess wrapped in a
+TODO.** Before stating a Proposed calculation for a Matched or
+resolved-Ambiguous row, check every column name it references against
+that row's `columns` (or `column_types`) list from Step 3. A calculation
+that needs a column not on that list is not confirmed — never state it
+with a "TODO: confirm the column name" placeholder and move on. Instead,
+move the row to Open Questions, naming the model's real available columns
+as candidates, so the mismatch gets resolved before Step 6 ever runs. A
+row with an unconfirmed column reference is not buildable, the same way
+an undecided grain or an unresolved Semantic Layer match isn't.
+
+Quote the short fragment of `reasoning` that most directly justifies the
+Proposed calculation, e.g. `— based on "refunds have skewed it negative
+before"`. This is what makes the inference auditable: a reviewer can trace
+the calculation back to the exact words that produced it instead of
+re-reading the whole `reasoning` text and re-deriving your reasoning
+themselves.
 
 **Assertions this draft will encode (required for every Matched/resolved
 row).** State plainly, as its own line, exactly which tests Step 6 will
@@ -282,7 +307,9 @@ Step 6 in the same turn unless the human has already told you to build it.
 Only for rows that ended up Matched or resolved-Ambiguous **and** have a
 decided grain (inferred in Step 1 or picked by the stakeholder from the
 Step 5 alternatives) **and** were not left as an unresolved Semantic Layer
-Open Question from Step 4. Build **one metric at a time, fully, before
+Open Question from Step 4 **and** had every column their calculation
+references confirmed against Step 3's grounding, per Step 5. Build
+**one metric at a time, fully, before
 starting the next** — its SQL and its own schema.yml entry together —
 rather than drafting all SQL first and all schema.yml entries after; a
 sheet with several matched metrics reviews as a sequence of independent
@@ -369,6 +396,10 @@ committed or built against the warehouse.
 - Never call a dbt command that mutates a warehouse (`build`/`run`/`test`/
   `seed`/`snapshot`) — only read-only introspection.
 - Never invent a `ref()`/model match that `ground.py` didn't confirm.
+- Never draft SQL, or state a Proposed calculation, referencing a column
+  Step 3's grounding didn't confirm exists on the matched model — an
+  unconfirmed column is an Open Question, never a TODO comment left for
+  later.
 - Never draft SQL for a row Step 4 flagged as a confident Semantic Layer
   match unless the stakeholder has explicitly said, in response to that
   Open Question, that a materialized duplicate is still wanted.

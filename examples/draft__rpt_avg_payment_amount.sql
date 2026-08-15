@@ -9,7 +9,10 @@
 -- Reasoning (stakeholder, verbatim): I quote this in pricing reviews so
 -- it has to be right - refunds have skewed it negative before
 -- Proposed calculation (inferred, approved before this file was built):
--- avg(amount) grouped across all payments in stg_payments
+-- avg(amount) grouped across all payments in stg_payments -- based on
+-- "refunds have skewed it negative before"
+-- `amount` was confirmed as a real column on stg_payments in Step 3; an
+-- unconfirmed column never reaches this file, it stays an Open Question.
 
 with
 
@@ -19,7 +22,6 @@ source_model as (
 
 final as (
     select
-        -- TODO: confirm the actual amount column name in stg_payments
         avg(amount) as avg_payment_amount
     from source_model
 )

@@ -195,7 +195,11 @@ def test_semantic_layer_metrics_empty_without_semantic_manifest(dbt_project):
 def test_semantic_layer_metrics_read_when_present(dbt_project):
     semantic_manifest = {
         "metrics": [
-            {"name": "avg_payment_amount", "description": "Average dollar amount per payment"}
+            {
+                "name": "avg_payment_amount",
+                "label": "Average Payment Amount",
+                "description": "Average dollar amount per payment",
+            }
         ]
     }
     project_root = dbt_project(
@@ -205,12 +209,27 @@ def test_semantic_layer_metrics_read_when_present(dbt_project):
     metrics = ground.semantic_layer_metrics(project_root)
 
     assert metrics == [
-        {"name": "avg_payment_amount", "description": "Average dollar amount per payment"}
+        {
+            "name": "avg_payment_amount",
+            "label": "Average Payment Amount",
+            "description": "Average dollar amount per payment",
+        }
     ]
 
 
+def test_semantic_layer_metrics_label_defaults_empty_when_absent(dbt_project):
+    semantic_manifest = {"metrics": [{"name": "avg_payment_amount", "description": ""}]}
+    project_root = dbt_project(
+        {}, extra_files={"target/semantic_manifest.json": json.dumps(semantic_manifest)}
+    )
+
+    metrics = ground.semantic_layer_metrics(project_root)
+
+    assert metrics[0]["label"] == ""
+
+
 def test_semantic_layer_confident_hit_is_surfaced(dbt_project):
-    semantic_metrics = [{"name": "avg_payment_amount", "description": ""}]
+    semantic_metrics = [{"name": "avg_payment_amount", "label": "", "description": ""}]
 
     match = ground.ground_against_semantic_layer("avg payment amount", semantic_metrics)
 
@@ -218,10 +237,27 @@ def test_semantic_layer_confident_hit_is_surfaced(dbt_project):
     assert match["metric"] == "avg_payment_amount"
 
 
+def test_semantic_layer_matches_on_label_when_name_diverges():
+    """Regression guard: a stakeholder's natural phrasing ("Marketing ROI")
+    must match a metric via its human-readable label even when the metric's
+    internal name is an abbreviated snake_case id the phrasing shares no
+    tokens with."""
+    semantic_metrics = [
+        {"name": "mktg_roi_pct", "label": "Marketing ROI", "description": ""}
+    ]
+
+    match = ground.ground_against_semantic_layer("Marketing ROI", semantic_metrics)
+
+    assert match is not None
+    assert match["metric"] == "mktg_roi_pct"
+    assert match["label"] == "Marketing ROI"
+
+
 def test_semantic_layer_weak_overlap_never_auto_matches():
     """Regression guard: a metric name sharing no real tokens with any
-    existing Semantic Layer metric must stay unmatched, never a guess."""
-    semantic_metrics = [{"name": "avg_payment_amount", "description": ""}]
+    existing Semantic Layer metric (by name or label) must stay unmatched,
+    never a guess."""
+    semantic_metrics = [{"name": "avg_payment_amount", "label": "", "description": ""}]
 
     match = ground.ground_against_semantic_layer("Monthly churned users", semantic_metrics)
 

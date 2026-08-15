@@ -20,7 +20,7 @@ naming_convention_detected_from: dbt-bouncer.yml
 ## Payment count
 - Description: Number of payments processed
 - Reasoning (stakeholder, verbatim): want a sense of volume ahead of renegotiating fees with our payment provider
-- Proposed calculation (inference — confirm before building): count of rows in `stg_payments`
+- Proposed calculation (inference — confirm before building): count of rows in `stg_payments` — based on "want a sense of volume"
 - Grain (inference — confirm before building): **undecided** — "a sense of volume" doesn't say over what period, so pick from the options below
 - Assertions this draft will encode: none — importance is low, so only the description gets drafted (see AGENTS.md Step 6)
 - Importance: low
@@ -44,7 +44,7 @@ naming_convention_detected_from: dbt-bouncer.yml
 ## Average payment amount
 - Description: Average dollar amount per payment
 - Reasoning (stakeholder, verbatim): I quote this in pricing reviews so it has to be right - refunds have skewed it negative before
-- Proposed calculation (inference — confirm before building): `avg(amount)` across all rows in `stg_payments`
+- Proposed calculation (inference — confirm before building): `avg(amount)` across all rows in `stg_payments` — based on "I quote this in pricing reviews so it has to be right"; `amount` is a confirmed column on `stg_payments`
 - Grain (inference — confirm before building): one row total — a single number quoted in pricing reviews, with no per-period or per-customer signal
 - Assertions this draft will encode: `not_null` on `amount` (importance is high and the calculation depends entirely on it) + `not_negative` on `amount` (the reasoning says refunds have skewed this negative before) — this project already has that custom test (used twice elsewhere), reused here instead of a generic substitute (see AGENTS.md Step 6)
 - Importance: high

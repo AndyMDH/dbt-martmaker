@@ -118,7 +118,11 @@ def semantic_layer_metrics(project_root: Path) -> list[dict]:
     with manifest_path.open() as f:
         data = json.load(f)
     return [
-        {"name": m.get("name", ""), "description": m.get("description", "") or ""}
+        {
+            "name": m.get("name", ""),
+            "label": m.get("label") or "",
+            "description": m.get("description", "") or "",
+        }
         for m in data.get("metrics", [])
     ]
 
@@ -220,21 +224,30 @@ def ground_against_semantic_layer(metric_name: str, semantic_metrics: list[dict]
     """A confident hit only -- reuses MATCHED_THRESHOLD rather than a new
     magic number, since "confident enough to auto-match a table" is the same
     bar as "confident enough to tell a stakeholder this metric may already
-    exist." Below that bar, stay silent rather than raise a shaky flag."""
+    exist." Below that bar, stay silent rather than raise a shaky flag.
+
+    Scores against both the metric's internal `name` and its human-readable
+    `label` (when the Semantic Layer defines one) and keeps the better of
+    the two -- a stakeholder's "Marketing ROI" often matches a metric's
+    label even when it diverges from a snake_case name like `mktg_roi_pct`.
+    """
     if not metric_name or not semantic_metrics:
         return None
-    scored = sorted(
-        (
+    scored = []
+    for m in semantic_metrics:
+        name_score = score(metric_name, {"name": m["name"], "description": m["description"]})
+        label_score = (
+            score(metric_name, {"name": m["label"], "description": ""}) if m["label"] else 0.0
+        )
+        scored.append(
             {
                 "metric": m["name"],
+                "label": m["label"],
                 "description": m["description"],
-                "score": round(score(metric_name, m), 3),
+                "score": round(max(name_score, label_score), 3),
             }
-            for m in semantic_metrics
-        ),
-        key=lambda c: c["score"],
-        reverse=True,
-    )
+        )
+    scored.sort(key=lambda c: c["score"], reverse=True)
     top = scored[0]
     if top["score"] < MATCHED_THRESHOLD:
         return None
