@@ -23,14 +23,18 @@
 
 ## Install
 
-```bash
-git clone https://github.com/AndyMDH/dbt-martmaker.git && ./dbt-martmaker/install.sh
+```
+/plugin marketplace add AndyMDH/dbt-martmaker
+/plugin install dbt-martmaker
 ```
 
-Symlinks `skills/dbt-martmaker/` into `~/.claude/skills/` (`--project` for
-one repo only, `--copy` instead of a symlink) — or skip the script and
-copy that folder there yourself. Requires a dbt project with
-`target/manifest.json` (`dbt parse`).
+That is a normal Claude Code plugin install — no clone, no script, and
+`/plugin update dbt-martmaker` picks up new releases. Requires a dbt
+project with `target/manifest.json` (`dbt parse`).
+
+Working in one repo only, or not using the plugin system? Clone and run
+`./install.sh --project` instead — see [`install.sh`](install.sh) for the
+project-scoped and copy-instead-of-symlink variants.
 
 ## Quickstart
 

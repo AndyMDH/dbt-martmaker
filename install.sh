@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-# Install dbt-martmaker as a Claude Code / agent skill.
+# Install dbt-martmaker as a Claude Code / agent skill, without the plugin
+# system -- for a single project, a non-Claude-Code agent, or a copy you
+# intend to edit locally. Most users want the plugin install instead:
+#   /plugin marketplace add AndyMDH/dbt-martmaker
+#   /plugin install dbt-martmaker
 #
 # Usage:
 #   ./install.sh                 # symlink into ~/.claude/skills/dbt-martmaker (global)
