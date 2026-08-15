@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="examples/workflow.svg" alt="workflow" width="720">
+  <img src="examples/workflow.svg" alt="workflow" width="900">
 </p>
 
 ## Install
