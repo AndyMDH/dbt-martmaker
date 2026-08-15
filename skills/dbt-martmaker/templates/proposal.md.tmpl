@@ -17,11 +17,12 @@ naming_convention_detected_from: <dbt-bouncer.yml | sampled:models/marts | none>
 ## <Metric name>
 - Description: <description column>
 - Reasoning (stakeholder, verbatim): <reasoning column>
-- Proposed calculation (your inference — confirm before building): <derived from reasoning + grounded columns>
+- Proposed calculation (your inference — confirm before building): <derived from reasoning + grounded columns, using only columns confirmed in Step 3> — based on "<short quoted fragment of reasoning that justifies it>"
 - Grain (your inference — confirm before building): one row per <___>
-- Proposed tests: <list, noting which reuse an existing project test vs. a built-in — see AGENTS.md Step 5>
+- Assertions this draft will encode: <exact test names + columns, e.g. "not_null on payment_id, amount; accepted_values on status" — noting which reuse an existing project test vs. a built-in, see AGENTS.md Step 6. This is what your approval locks in, same as the calculation and grain above.>
 - Importance: <low | medium | high>
 - Grounding: <matched "<model>" | ambiguous - candidates: [...] | blocked - no matching staging/intermediate model found>
+- Semantic Layer: <omit this line entirely when target/semantic_manifest.json isn't present or found no match — otherwise: "Already appears to exist as MetricFlow metric `<name>` — see Open Questions before this row is built.">
 - Status: <Matched | Ambiguous | Blocked>
 
 **What the output would look like** *(fake data — shape only, no query was run)*:
@@ -55,12 +56,16 @@ Open questions. -->
 - New: `draft__<name>.sql` (grain: one row per <___>) —
   tests calibrated to <importance>
 - schema.yml: description from Description, tests/freshness per the
-  importance-based rules in AGENTS.md Step 5
+  importance-based rules in AGENTS.md Step 6
 
 ## Open questions
 - [ ] <one line per Ambiguous/Blocked row, per undecided grain ("Which of
-  the option tables above is the one you pictured for <metric>?"), or any
-  other unresolved item>
+  the option tables above is the one you pictured for <metric>?"), per
+  Semantic Layer match ("This already exists as MetricFlow metric `<name>`
+  — do you still want a materialized copy, and why?"), per unconfirmed
+  column ("The calculation for <metric> needs a `<column>` column, but
+  `<model>` doesn't have one — did you mean one of: <real columns from
+  Step 3>?"), or any other unresolved item>
 
 ## Next steps
 1. Resolve open questions above.
