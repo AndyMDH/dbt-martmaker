@@ -78,6 +78,29 @@ If the sheet changed since the last proposal (checksum mismatch), always
 re-ground and re-propose from scratch — never build from stale grounding
 results.
 
+## Utilities (on demand)
+
+Two scripts outside the main flow, for a status check rather than running
+Steps 0–8:
+
+- `scripts/doctor.py [start_dir]` — readiness check. Run this first
+  whenever it's unclear if the project has what this skill needs: finds
+  `dbt_project.yml` walking upward from `start_dir` (default cwd), then
+  reports whether `target/manifest.json` exists, whether PyYAML is
+  importable, and whether `target/catalog.json` /
+  `target/semantic_manifest.json` / `dbt-bouncer.yml` are present — the
+  latter three are enrichment and never block readiness. `ready: false`
+  means Step 0 will fail; its `messages` list says exactly what to fix.
+- `scripts/list_sheets.py <project_root>` — status of every sheet already
+  in `.dbt-martmaker/sheets/`: `no proposal yet`, `proposed`, `built`, or
+  `stale (sheet changed since last proposal)`, with matched/ambiguous/
+  blocked row counts once a proposal exists. Use this when more than one
+  metric sheet is in flight, or when picking a project back up after a
+  break, instead of reading `.dbt-martmaker/drafts/` by hand.
+
+Both are read-only status checks — neither writes anything or is part of
+the approval flow.
+
 ## Step 0 — Locate & checksum
 
 Walk upward from the current working directory until a `dbt_project.yml` is
