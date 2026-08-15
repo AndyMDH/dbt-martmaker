@@ -1,15 +1,29 @@
 #!/usr/bin/env python3
 """
-Ground one or more source-table references against models that already
-exist in a dbt project's staging/intermediate layers.
+Ground one or more source-table references, and a metric name, against a
+dbt project's own state: models that already exist in its
+staging/intermediate layers, and metrics that already exist in its dbt
+Semantic Layer.
 
 Reads target/manifest.json directly -- no live dbt-mcp connection required.
+If target/catalog.json is present, real warehouse column types are attached
+to a matched/ambiguous candidate's columns, so a proposal can judge whether
+a candidate column can actually support a stakeholder's calculation (e.g. an
+amount column stored as a string). The catalog is enrichment only -- a
+missing catalog never blocks or downgrades a match made from the manifest.
+
+If target/semantic_manifest.json is present, the metric name is also scored
+against every existing dbt Semantic Layer metric, using the same scorer used
+for table grounding. A confident hit is never a silent block: it is surfaced
+so the calling skill can ask whether a stakeholder still wants a materialized
+duplicate of a metric MetricFlow already serves.
+
 If a .mcp.json in the project configures a dbt MCP server, this script just
 reports that fact so the calling skill can optionally use it for richer
 lineage/detail lookups; this script never calls it itself.
 
 Usage:
-    ground.py <project_root> "<comma-separated source table references>"
+    ground.py <project_root> "<comma-separated source table references>" "<metric name>"
 
 Output: a single JSON object on stdout. Never raises on a "no match" case --
 that's a normal, expected result (status: blocked), not an error. Exits
@@ -20,14 +34,36 @@ import re
 import sys
 from pathlib import Path
 
-MATCHED_THRESHOLD = 0.72
-AMBIGUOUS_THRESHOLD = 0.35
+# Deliberately conservative, not tuned per-project: a false "matched" that
+# silently picks the wrong model is worse than an "ambiguous" that asks a
+# human, so every threshold below is set to fail toward asking, not guessing.
+MATCHED_THRESHOLD = 0.72  # top score must clear this to auto-match
+AMBIGUOUS_THRESHOLD = 0.35  # below this, a candidate isn't even shortlisted
 MAX_SHORTLIST = 10
 DESC_ONLY_CEILING = 0.5  # a description mention alone can surface a candidate,
                           # but can never alone be confident enough to auto-match
+# top score must beat the runner-up by this margin to auto-match -- without
+# it, two similarly-named models (stg_orders vs stg_order_items) could tie
+# into a wrong pick instead of surfacing both as ambiguous candidates.
+MATCH_MARGIN = 0.15
 
 STAGING_INTERMEDIATE_PREFIXES = ("models/staging", "models/intermediate")
 LAYER_PREFIXES = {"stg", "int", "dim", "fct", "rpt", "base", "seed"}
+
+# Common analytics-engineering synonyms -- not exhaustive NLP, just the
+# handful of business-term pairs that come up constantly (a stakeholder
+# says "clients", the project's staging model says stg_customers) and would
+# otherwise score zero token overlap despite meaning the same thing. Extend
+# this list for your own domain's vocabulary as real misses turn up.
+SYNONYM_GROUPS = [
+    {"customer", "customers", "client", "clients"},
+    {"order", "orders", "purchase", "purchases"},
+    {"revenue", "sales"},
+    {"user", "users", "member", "members"},
+    {"employee", "employees", "staff"},
+    {"payment", "payments", "transaction", "transactions"},
+]
+_SYNONYM_CANONICAL = {token: min(group) for group in SYNONYM_GROUPS for token in group}
 
 
 def load_manifest(project_root: Path) -> dict:
@@ -49,9 +85,32 @@ def load_manifest(project_root: Path) -> dict:
         return json.load(f)
 
 
-def staging_and_intermediate_models(manifest: dict) -> list[dict]:
+def load_catalog(project_root: Path) -> dict:
+    """Optional enrichment. Returns {} (never errors, never exits) when
+    target/catalog.json doesn't exist -- grounding must work the same
+    without it, just without real column types."""
+    catalog_path = project_root / "target" / "catalog.json"
+    if not catalog_path.exists():
+        return {}
+    with catalog_path.open() as f:
+        return json.load(f)
+
+
+def _column_types(unique_id: str, catalog: dict) -> dict[str, str]:
+    node = catalog.get("nodes", {}).get(unique_id, {})
+    return {
+        col_name: (col_info.get("type") or "")
+        for col_name, col_info in node.get("columns", {}).items()
+    }
+
+
+def staging_and_intermediate_models(manifest: dict, catalog: dict | None = None) -> list[dict]:
+    catalog = catalog or {}
     candidates = []
-    for node in manifest.get("nodes", {}).values():
+    # manifest.json's "nodes" dict is keyed by unique_id -- that key is the
+    # authoritative id, not the (often absent in hand-built fixtures, and
+    # redundant in real manifests) "unique_id" field some nodes also carry.
+    for unique_id, node in manifest.get("nodes", {}).items():
         if node.get("resource_type") != "model":
             continue
         original_path = node.get("original_file_path", "")
@@ -62,15 +121,39 @@ def staging_and_intermediate_models(manifest: dict) -> list[dict]:
                 "name": node.get("name", ""),
                 "description": node.get("description", "") or "",
                 "columns": sorted(node.get("columns", {}).keys()),
+                "column_types": _column_types(unique_id, catalog),
                 "original_file_path": original_path,
-                "unique_id": node.get("unique_id", ""),
+                "unique_id": unique_id,
             }
         )
     return candidates
 
 
+def semantic_layer_metrics(project_root: Path) -> list[dict]:
+    """Every metric already defined in the project's dbt Semantic Layer, if
+    it has one. Returns [] when target/semantic_manifest.json doesn't exist
+    or defines no metrics -- never an error, since most projects don't run
+    a Semantic Layer at all."""
+    manifest_path = project_root / "target" / "semantic_manifest.json"
+    if not manifest_path.exists():
+        return []
+    with manifest_path.open() as f:
+        data = json.load(f)
+    return [
+        {
+            "name": m.get("name", ""),
+            "label": m.get("label") or "",
+            "description": m.get("description", "") or "",
+        }
+        for m in data.get("metrics", [])
+    ]
+
+
 def _tokenize(text: str) -> set[str]:
-    return {tok for tok in re.split(r"[^a-z0-9]+", text.lower()) if len(tok) > 2}
+    tokens = {tok for tok in re.split(r"[^a-z0-9]+", text.lower()) if len(tok) > 2}
+    # Canonicalize known synonyms so "clients" and "customers" overlap --
+    # every caller (reference, name, description tokens) gets this for free.
+    return {_SYNONYM_CANONICAL.get(tok, tok) for tok in tokens}
 
 
 def _name_tokens(name: str) -> set[str]:
@@ -135,13 +218,14 @@ def ground_one(reference: str, candidates: list[dict]) -> dict:
 
     top = scored[0]
     second = scored[1]["score"] if len(scored) > 1 else 0.0
-    if top["score"] >= MATCHED_THRESHOLD and (top["score"] - second) >= 0.15:
+    if top["score"] >= MATCHED_THRESHOLD and (top["score"] - second) >= MATCH_MARGIN:
         return {
             "reference": reference,
             "status": "matched",
             "model": top["name"],
             "description": top["description"],
             "columns": top["columns"],
+            "column_types": top["column_types"],
             "original_file_path": top["original_file_path"],
             "score": top["score"],
         }
@@ -150,6 +234,8 @@ def ground_one(reference: str, candidates: list[dict]) -> dict:
         {
             "model": c["name"],
             "description": c["description"],
+            "columns": c["columns"],
+            "column_types": c["column_types"],
             "original_file_path": c["original_file_path"],
             "score": c["score"],
         }
@@ -159,13 +245,50 @@ def ground_one(reference: str, candidates: list[dict]) -> dict:
     return {"reference": reference, "status": "ambiguous", "candidates": shortlist}
 
 
+def ground_against_semantic_layer(metric_name: str, semantic_metrics: list[dict]) -> dict | None:
+    """A confident hit only -- reuses MATCHED_THRESHOLD rather than a new
+    magic number, since "confident enough to auto-match a table" is the same
+    bar as "confident enough to tell a stakeholder this metric may already
+    exist." Below that bar, stay silent rather than raise a shaky flag.
+
+    Scores against both the metric's internal `name` and its human-readable
+    `label` (when the Semantic Layer defines one) and keeps the better of
+    the two -- a stakeholder's "Marketing ROI" often matches a metric's
+    label even when it diverges from a snake_case name like `mktg_roi_pct`.
+    """
+    if not metric_name or not semantic_metrics:
+        return None
+    scored = []
+    for m in semantic_metrics:
+        name_score = score(metric_name, {"name": m["name"], "description": m["description"]})
+        label_score = (
+            score(metric_name, {"name": m["label"], "description": ""}) if m["label"] else 0.0
+        )
+        scored.append(
+            {
+                "metric": m["name"],
+                "label": m["label"],
+                "description": m["description"],
+                "score": round(max(name_score, label_score), 3),
+            }
+        )
+    scored.sort(key=lambda c: c["score"], reverse=True)
+    top = scored[0]
+    if top["score"] < MATCHED_THRESHOLD:
+        return None
+    return top
+
+
 def main() -> None:
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         print(
             json.dumps(
                 {
                     "error": "bad_args",
-                    "message": 'Usage: ground.py <project_root> "<comma-separated source table references>"',
+                    "message": (
+                        "Usage: ground.py <project_root> "
+                        '"<comma-separated source table references>" "<metric name>"'
+                    ),
                 }
             )
         )
@@ -173,18 +296,28 @@ def main() -> None:
 
     project_root = Path(sys.argv[1]).resolve()
     references = [r.strip() for r in sys.argv[2].split(",") if r.strip()]
+    metric_name = sys.argv[3].strip()
 
     manifest = load_manifest(project_root)
-    candidates = staging_and_intermediate_models(manifest)
+    catalog = load_catalog(project_root)
+    candidates = staging_and_intermediate_models(manifest, catalog)
 
     results = [ground_one(ref, candidates) for ref in references]
+
+    semantic_metrics = semantic_layer_metrics(project_root)
+    semantic_match = ground_against_semantic_layer(metric_name, semantic_metrics)
 
     print(
         json.dumps(
             {
                 "dbt_mcp_configured": dbt_mcp_configured(project_root),
+                "catalog_available": bool(catalog),
                 "candidate_pool_size": len(candidates),
                 "results": results,
+                "semantic_layer": {
+                    "available": (project_root / "target" / "semantic_manifest.json").exists(),
+                    "match": semantic_match,
+                },
             },
             indent=2,
         )

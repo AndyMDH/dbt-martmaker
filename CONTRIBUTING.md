@@ -25,7 +25,19 @@ release/tag process — merging `dev` into `main` *is* the release.
 pip install -r requirements-dev.txt
 ruff check skills/ tests/
 pytest
+claude plugin validate . --strict
 ```
 
-Both `ruff` and `pytest` run in CI (`.github/workflows/ci.yml`) on every
-push and PR.
+`ruff`, `pytest`, and `claude plugin validate` all run in CI
+(`.github/workflows/ci.yml`) on every push and PR.
+
+## Releasing
+
+`.claude-plugin/plugin.json`'s `version` and `pyproject.toml`'s
+`[project] version` must always match — bump both together. Claude Code
+uses the plugin's `version` to decide when an installed user sees an
+update. After merging to `main`, tag the release with:
+
+```bash
+claude plugin tag --push
+```

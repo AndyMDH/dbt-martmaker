@@ -37,13 +37,20 @@ custom test where one fits:
    tests already in use — built-in, package, and custom — so it can reuse
    your project's own conventions instead of a generic default.
 3. Grounds each candidate against `target/manifest.json` — **matched**,
-   **ambiguous**, or **blocked**, never guessed.
-4. Writes a proposal (summary table + per-metric detail, `reasoning` shown
+   **ambiguous**, or **blocked**, never guessed. When `target/catalog.json`
+   is present, a matched or ambiguous candidate also carries each column's
+   real warehouse data type.
+4. Checks whether the metric already exists as a live metric in your dbt
+   Semantic Layer, when the project has one (`target/semantic_manifest.json`).
+   A confident hit never gets silently duplicated as a new mart — it
+   becomes an open question instead.
+5. Writes a proposal (summary table + per-metric detail, `reasoning` shown
    verbatim next to its own proposed calculation, a "one row per ___"
-   grain statement, tests, and a fake-data preview of the output table —
-   with 2–3 alternative shapes to pick from when the grain is unclear)
-   and **stops for your approval** — nothing is built yet.
-5. Once approved: writes draft SQL/schema.yml into `.dbt-martmaker/drafts/`,
-   tests scaled to each metric's `importance` and reusing an existing
-   custom/package test where one already fits.
-6. You review, then promote the drafts into `models/marts/` yourself.
+   grain statement, the exact assertions a build will encode, and a
+   fake-data preview of the output table — with 2–3 alternative shapes to
+   pick from when the grain is unclear) and **stops for your approval** —
+   nothing is built yet.
+6. Once approved: writes draft SQL/schema.yml into `.dbt-martmaker/drafts/`,
+   one metric at a time, tests scaled to each metric's `importance` and
+   reusing an existing custom/package test where one already fits.
+7. You review, then promote the drafts into `models/marts/` yourself.

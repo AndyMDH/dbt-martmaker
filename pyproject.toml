@@ -1,3 +1,9 @@
+[project]
+name = "dbt-martmaker"
+version = "0.2.0"
+description = "Turn a metric requirements sheet into a draft dbt mart model, grounded against your project's own manifest."
+requires-python = ">=3.12"
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"

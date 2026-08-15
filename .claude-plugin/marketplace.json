@@ -1,0 +1,21 @@
+{
+  "name": "andymdh",
+  "owner": {
+    "name": "Andy Ho",
+    "url": "https://github.com/AndyMDH"
+  },
+  "description": "Andy Ho's Claude Code plugins.",
+  "plugins": [
+    {
+      "name": "dbt-martmaker",
+      "source": "./",
+      "description": "Draft dbt mart models from a stakeholder metric sheet, grounded against your manifest and checked against the dbt Semantic Layer.",
+      "category": "data",
+      "keywords": [
+        "dbt",
+        "analytics-engineering",
+        "data-modeling"
+      ]
+    }
+  ]
+}

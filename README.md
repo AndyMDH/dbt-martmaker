@@ -18,19 +18,23 @@
 </p>
 
 <p align="center">
-  <img src="examples/workflow.svg" alt="workflow" width="720">
+  <img src="examples/workflow.svg" alt="workflow" width="900">
 </p>
 
 ## Install
 
-```bash
-git clone https://github.com/AndyMDH/dbt-martmaker.git && ./dbt-martmaker/install.sh
+```
+/plugin marketplace add AndyMDH/dbt-martmaker
+/plugin install dbt-martmaker
 ```
 
-Symlinks `skills/dbt-martmaker/` into `~/.claude/skills/` (`--project` for
-one repo only, `--copy` instead of a symlink) — or skip the script and
-copy that folder there yourself. Requires a dbt project with
-`target/manifest.json` (`dbt parse`).
+That is a normal Claude Code plugin install — no clone, no script, and
+`/plugin update dbt-martmaker` picks up new releases. Requires a dbt
+project with `target/manifest.json` (`dbt parse`).
+
+Working in one repo only, or not using the plugin system? Clone and run
+`./install.sh --project` instead — see [`install.sh`](install.sh) for the
+project-scoped and copy-instead-of-symlink variants.
 
 ## Quickstart
 
@@ -64,17 +68,32 @@ approved, and the under-the-hood steps: [`docs/USAGE.md`](docs/USAGE.md).
 - **Mart layer only** — combines models that already exist in
   `models/staging/`/`models/intermediate/`; a metric needing a genuinely
   new raw source is flagged **blocked**, never attempted.
+- **Checks the dbt Semantic Layer first** — if your project runs
+  MetricFlow, a metric that already exists there is flagged, never
+  silently duplicated as a new physical mart.
 - **Reuses your conventions** — naming/materialization and existing
   generic tests (built-in, package, or custom) are detected from your
   project, not assumed.
 - **Never runs dbt** — no `dbt build`/`run`/`test`; output is a proposal
   doc plus draft SQL/schema.yml for you to review and promote yourself.
 
+## Utilities
+
+Two read-only status checks, outside the main propose-then-build flow:
+
+- `scripts/doctor.py [start_dir]` — is this project ready? Checks for
+  `target/manifest.json`, PyYAML, and (as enrichment, never blocking)
+  `catalog.json`/`semantic_manifest.json`/`dbt-bouncer.yml`. Run this
+  first if you're not sure the skill has what it needs.
+- `scripts/list_sheets.py <project_root>` — status of every sheet in
+  `.dbt-martmaker/sheets/`: no proposal yet / proposed / built / stale.
+
 ## Documentation
 
 | | |
 |---|---|
 | [`docs/USAGE.md`](docs/USAGE.md) | Full walkthrough — example sheet, proposal, drafted SQL/schema.yml, and the under-the-hood steps. |
+| [`CHANGELOG.md`](CHANGELOG.md) | What changed, release by release. |
 
 ## License
 
