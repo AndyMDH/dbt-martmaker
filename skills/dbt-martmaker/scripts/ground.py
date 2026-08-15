@@ -1,15 +1,29 @@
 #!/usr/bin/env python3
 """
-Ground one or more source-table references against models that already
-exist in a dbt project's staging/intermediate layers.
+Ground one or more source-table references, and a metric name, against a
+dbt project's own state: models that already exist in its
+staging/intermediate layers, and metrics that already exist in its dbt
+Semantic Layer.
 
 Reads target/manifest.json directly -- no live dbt-mcp connection required.
+If target/catalog.json is present, real warehouse column types are attached
+to a matched/ambiguous candidate's columns, so a proposal can judge whether
+a candidate column can actually support a stakeholder's calculation (e.g. an
+amount column stored as a string). The catalog is enrichment only -- a
+missing catalog never blocks or downgrades a match made from the manifest.
+
+If target/semantic_manifest.json is present, the metric name is also scored
+against every existing dbt Semantic Layer metric, using the same scorer used
+for table grounding. A confident hit is never a silent block: it is surfaced
+so the calling skill can ask whether a stakeholder still wants a materialized
+duplicate of a metric MetricFlow already serves.
+
 If a .mcp.json in the project configures a dbt MCP server, this script just
 reports that fact so the calling skill can optionally use it for richer
 lineage/detail lookups; this script never calls it itself.
 
 Usage:
-    ground.py <project_root> "<comma-separated source table references>"
+    ground.py <project_root> "<comma-separated source table references>" "<metric name>"
 
 Output: a single JSON object on stdout. Never raises on a "no match" case --
 that's a normal, expected result (status: blocked), not an error. Exits
@@ -49,9 +63,32 @@ def load_manifest(project_root: Path) -> dict:
         return json.load(f)
 
 
-def staging_and_intermediate_models(manifest: dict) -> list[dict]:
+def load_catalog(project_root: Path) -> dict:
+    """Optional enrichment. Returns {} (never errors, never exits) when
+    target/catalog.json doesn't exist -- grounding must work the same
+    without it, just without real column types."""
+    catalog_path = project_root / "target" / "catalog.json"
+    if not catalog_path.exists():
+        return {}
+    with catalog_path.open() as f:
+        return json.load(f)
+
+
+def _column_types(unique_id: str, catalog: dict) -> dict[str, str]:
+    node = catalog.get("nodes", {}).get(unique_id, {})
+    return {
+        col_name: (col_info.get("type") or "")
+        for col_name, col_info in node.get("columns", {}).items()
+    }
+
+
+def staging_and_intermediate_models(manifest: dict, catalog: dict | None = None) -> list[dict]:
+    catalog = catalog or {}
     candidates = []
-    for node in manifest.get("nodes", {}).values():
+    # manifest.json's "nodes" dict is keyed by unique_id -- that key is the
+    # authoritative id, not the (often absent in hand-built fixtures, and
+    # redundant in real manifests) "unique_id" field some nodes also carry.
+    for unique_id, node in manifest.get("nodes", {}).items():
         if node.get("resource_type") != "model":
             continue
         original_path = node.get("original_file_path", "")
@@ -62,11 +99,28 @@ def staging_and_intermediate_models(manifest: dict) -> list[dict]:
                 "name": node.get("name", ""),
                 "description": node.get("description", "") or "",
                 "columns": sorted(node.get("columns", {}).keys()),
+                "column_types": _column_types(unique_id, catalog),
                 "original_file_path": original_path,
-                "unique_id": node.get("unique_id", ""),
+                "unique_id": unique_id,
             }
         )
     return candidates
+
+
+def semantic_layer_metrics(project_root: Path) -> list[dict]:
+    """Every metric already defined in the project's dbt Semantic Layer, if
+    it has one. Returns [] when target/semantic_manifest.json doesn't exist
+    or defines no metrics -- never an error, since most projects don't run
+    a Semantic Layer at all."""
+    manifest_path = project_root / "target" / "semantic_manifest.json"
+    if not manifest_path.exists():
+        return []
+    with manifest_path.open() as f:
+        data = json.load(f)
+    return [
+        {"name": m.get("name", ""), "description": m.get("description", "") or ""}
+        for m in data.get("metrics", [])
+    ]
 
 
 def _tokenize(text: str) -> set[str]:
@@ -142,6 +196,7 @@ def ground_one(reference: str, candidates: list[dict]) -> dict:
             "model": top["name"],
             "description": top["description"],
             "columns": top["columns"],
+            "column_types": top["column_types"],
             "original_file_path": top["original_file_path"],
             "score": top["score"],
         }
@@ -150,6 +205,8 @@ def ground_one(reference: str, candidates: list[dict]) -> dict:
         {
             "model": c["name"],
             "description": c["description"],
+            "columns": c["columns"],
+            "column_types": c["column_types"],
             "original_file_path": c["original_file_path"],
             "score": c["score"],
         }
@@ -159,13 +216,41 @@ def ground_one(reference: str, candidates: list[dict]) -> dict:
     return {"reference": reference, "status": "ambiguous", "candidates": shortlist}
 
 
+def ground_against_semantic_layer(metric_name: str, semantic_metrics: list[dict]) -> dict | None:
+    """A confident hit only -- reuses MATCHED_THRESHOLD rather than a new
+    magic number, since "confident enough to auto-match a table" is the same
+    bar as "confident enough to tell a stakeholder this metric may already
+    exist." Below that bar, stay silent rather than raise a shaky flag."""
+    if not metric_name or not semantic_metrics:
+        return None
+    scored = sorted(
+        (
+            {
+                "metric": m["name"],
+                "description": m["description"],
+                "score": round(score(metric_name, m), 3),
+            }
+            for m in semantic_metrics
+        ),
+        key=lambda c: c["score"],
+        reverse=True,
+    )
+    top = scored[0]
+    if top["score"] < MATCHED_THRESHOLD:
+        return None
+    return top
+
+
 def main() -> None:
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         print(
             json.dumps(
                 {
                     "error": "bad_args",
-                    "message": 'Usage: ground.py <project_root> "<comma-separated source table references>"',
+                    "message": (
+                        "Usage: ground.py <project_root> "
+                        '"<comma-separated source table references>" "<metric name>"'
+                    ),
                 }
             )
         )
@@ -173,18 +258,28 @@ def main() -> None:
 
     project_root = Path(sys.argv[1]).resolve()
     references = [r.strip() for r in sys.argv[2].split(",") if r.strip()]
+    metric_name = sys.argv[3].strip()
 
     manifest = load_manifest(project_root)
-    candidates = staging_and_intermediate_models(manifest)
+    catalog = load_catalog(project_root)
+    candidates = staging_and_intermediate_models(manifest, catalog)
 
     results = [ground_one(ref, candidates) for ref in references]
+
+    semantic_metrics = semantic_layer_metrics(project_root)
+    semantic_match = ground_against_semantic_layer(metric_name, semantic_metrics)
 
     print(
         json.dumps(
             {
                 "dbt_mcp_configured": dbt_mcp_configured(project_root),
+                "catalog_available": bool(catalog),
                 "candidate_pool_size": len(candidates),
                 "results": results,
+                "semantic_layer": {
+                    "available": (project_root / "target" / "semantic_manifest.json").exists(),
+                    "match": semantic_match,
+                },
             },
             indent=2,
         )
