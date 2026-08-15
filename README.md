@@ -77,11 +77,23 @@ approved, and the under-the-hood steps: [`docs/USAGE.md`](docs/USAGE.md).
 - **Never runs dbt** — no `dbt build`/`run`/`test`; output is a proposal
   doc plus draft SQL/schema.yml for you to review and promote yourself.
 
+## Utilities
+
+Two read-only status checks, outside the main propose-then-build flow:
+
+- `scripts/doctor.py [start_dir]` — is this project ready? Checks for
+  `target/manifest.json`, PyYAML, and (as enrichment, never blocking)
+  `catalog.json`/`semantic_manifest.json`/`dbt-bouncer.yml`. Run this
+  first if you're not sure the skill has what it needs.
+- `scripts/list_sheets.py <project_root>` — status of every sheet in
+  `.dbt-martmaker/sheets/`: no proposal yet / proposed / built / stale.
+
 ## Documentation
 
 | | |
 |---|---|
 | [`docs/USAGE.md`](docs/USAGE.md) | Full walkthrough — example sheet, proposal, drafted SQL/schema.yml, and the under-the-hood steps. |
+| [`CHANGELOG.md`](CHANGELOG.md) | What changed, release by release. |
 
 ## License
 
