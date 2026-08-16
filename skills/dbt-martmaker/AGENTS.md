@@ -109,7 +109,16 @@ found; that's the project root. If none is found within a reasonable number
 of parent directories, **ERROR**: `No dbt_project.yml found — dbt-martmaker
 must be run from inside a dbt project.` Stop; do not guess a root.
 
-Compute a checksum (e.g. sha256) of the sheet's contents.
+Compute a sha256 checksum of the sheet's raw bytes — it must match exactly
+what `scripts/list_sheets.py` computes
+(`hashlib.sha256(path.read_bytes()).hexdigest()`), since that script is how
+a human later checks whether a sheet has gone stale. Do not estimate or
+hand-compute it. Run it via the same one-liner `list_sheets.py` uses
+internally:
+
+```
+python3 -c "import hashlib,sys; print(hashlib.sha256(open(sys.argv[1],'rb').read()).hexdigest())" <sheet_path>
+```
 
 Derive `<slug>` from the sheet's filename (without extension).
 
