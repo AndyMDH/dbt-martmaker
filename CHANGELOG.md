@@ -3,6 +3,31 @@
 All notable changes to this project are documented here. Format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.5.1] - 2026-08-16
+
+Re-ran `doctor.py` and `list_sheets.py` against the same sandbox project
+right after 0.5.0 and found one more thing: `doctor.py`'s own marts check
+still only looked at `models/marts/` -- it never got 0.5.0's fallback fix,
+because it had its own, separate, now out-of-sync copy of that check.
+
+### Fixed
+- `doctor.py` now reuses `detect_conventions.py`'s `sample_naming_from_files()`
+  for its marts check, instead of a second, independent
+  `models/marts/`-only check that could drift out of sync with the first
+  one -- which is exactly what had just happened.
+- `detect_conventions.py` used to call `sys.exit(1)` at *import time* if
+  PyYAML wasn't installed, which made the whole module impossible to
+  import from anywhere else -- including by `doctor.py`, to reuse a
+  function that never touched YAML in the first place. The missing-PyYAML
+  exit now happens only in `detect_conventions.py`'s own `main()`; the
+  individual functions degrade to `None` instead, exactly like a missing
+  `dbt-bouncer.yml` or `dbt_project.yml` already did.
+
+### Added
+- 3 new tests (80 total) locking in that `doctor.py` and
+  `detect_conventions.py` never disagree about marts again, and that the
+  PyYAML-independent functions survive PyYAML actually being absent.
+
 ## [0.5.0] - 2026-08-16
 
 Fixes three real bugs found by running the skill end to end, by hand,

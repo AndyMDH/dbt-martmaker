@@ -18,6 +18,8 @@ import json
 import sys
 from pathlib import Path
 
+import detect_conventions
+
 MAX_WALK_UP = 10
 
 
@@ -89,12 +91,14 @@ def build_report(start: Path) -> dict:
         )
 
     checks["dbt_bouncer_config_present"] = (project_root / "dbt-bouncer.yml").exists()
-    marts_dir = project_root / "models" / "marts"
-    checks["marts_dir_has_files"] = marts_dir.exists() and any(marts_dir.rglob("*.sql"))
+    # Reuses detect_conventions.py's own marts-fallback logic (models/marts/,
+    # or models/ itself when that's empty) instead of a second, independent
+    # models/marts/-only check that could silently drift out of sync with it.
+    checks["marts_dir_has_files"] = detect_conventions.sample_naming_from_files(project_root) is not None
     if not checks["dbt_bouncer_config_present"] and not checks["marts_dir_has_files"]:
         messages.append(
-            "No dbt-bouncer.yml and no existing files under models/marts/ -- there's nothing "
-            "to sample a naming/materialization convention from yet. Not an error; the "
+            "No dbt-bouncer.yml and no existing marts files (in models/marts/ or models/ "
+            "itself) -- there's nothing to sample a naming/materialization convention from yet. Not an error; the "
             "proposal will ask you to confirm a convention instead of guessing one."
         )
 
