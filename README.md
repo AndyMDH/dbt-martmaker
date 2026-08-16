@@ -46,13 +46,9 @@ a single file.
 /plugin install dbt-martmaker
 ```
 
-This installs dbt-martmaker as a Claude Code plugin — no cloning required.
-It needs a dbt project with a `target/manifest.json` file. If the project
-has none yet, run `dbt parse` first.
-
-Working in one repo only, or not using the plugin system? Clone the repo
-and run `./install.sh --project` instead. See [`install.sh`](install.sh)
-for more options.
+This installs dbt-martmaker as a Claude Code plugin. It needs a dbt
+project with a `target/manifest.json` file. If the project has none yet,
+run `dbt parse` first.
 
 Not sure the project has everything the skill needs? Run
 `python scripts/doctor.py` first — see [Utilities](#utilities).
