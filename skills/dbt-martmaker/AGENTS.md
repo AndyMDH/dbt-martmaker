@@ -13,10 +13,11 @@ are relative to it unless stated otherwise.
 
 **Mart layer only.** This tool builds `dim_`/`fct_`/`rpt_` models by
 combining models that already exist in `models/staging/` and
-`models/intermediate/`. It does not create new staging models and does not
-declare new `source()` blocks. If a metric needs raw data that isn't staged
-yet anywhere in the project, that row is **BLOCKED** — flag it and move on,
-never attempt it.
+`models/intermediate/` — plus, when configured, public models from a
+sibling dbt Mesh project (see Configuration). It does not create new
+staging models and does not declare new `source()` blocks. If a metric
+needs raw data that isn't staged yet anywhere reachable, that row is
+**BLOCKED** — flag it and move on, never attempt it.
 
 It also never duplicates a metric a project's dbt Semantic Layer already
 serves live — see Step 4.
@@ -170,24 +171,39 @@ either has changed since the cache was written.
 
 For each row, run `scripts/ground.py <project_root> "<candidate references
 from Step 1>" "<metric name>"`. It reads `target/manifest.json` and, when
-present, `target/catalog.json`, and returns one `results` entry per
-reference plus a `semantic_layer` section (used in Step 4). Each `results`
-entry is one of:
+present, `target/catalog.json`, any sibling dbt Mesh manifests configured
+in `.dbt-martmaker/mesh_manifests.yml`, a project's own
+`.dbt-martmaker/glossary.yml`, and any remembered corrections in
+`.dbt-martmaker/corrections.jsonl` (see Configuration, below). It returns
+one `results` entry per reference plus a `semantic_layer` section (used in
+Step 4). Each `results` entry is one of:
 
 - **`matched`**: one confident hit — a real staging/intermediate model
   name, its columns, and (when `target/catalog.json` exists)
-  `column_types`: each matched column's real warehouse data type.
+  `column_types`: each matched column's real warehouse data type. A match
+  that came from a remembered correction carries `matched_via:
+  "correction"` instead of a `score` you need to weigh.
 - **`ambiguous`**: a shortlist of up to 10 candidates, none confident
   enough to pick automatically — each also carries `columns` and
   `column_types` when available, so you can weigh candidates by more than
-  name alone.
+  name alone. A candidate token overlap missed entirely, but that
+  embeddings surfaced (see below), carries `matched_via: "embedding"` and
+  a `score` of `0.0` — treat that as the weakest tier of evidence here,
+  never as good as a real token-overlap candidate in the same shortlist.
 - **`blocked`**: no candidates at all.
+
+Every candidate also carries `source_project`: `null` for a model in this
+project's own manifest, or a project name when the candidate is a public
+model from a sibling dbt Mesh project. **A mesh-sourced match changes how
+Step 6 must write the `ref()`** — see Step 6.
 
 Treat `ground.py`'s output as ground truth over your own reading of the
 reasoning text — do not override a `blocked` result with a guess about
 what the stakeholder probably meant, and do not silently pick one shortlist
-candidate over another. For `ambiguous`, you may reason about which
-shortlist candidate is the better fit given the row's `reasoning`, but if
+candidate over another. For `ambiguous`, weigh each candidate's
+`embedding_score` (when present) alongside your own reading of its
+description and columns given the row's `reasoning` — the embedding score
+is one more input to your judgment, never a rule that picks for you. If
 it's still not clear, put it in Open Questions rather than picking.
 
 `column_types` is enrichment, not a gate: a missing `target/catalog.json`
@@ -199,9 +215,11 @@ numeric range/comparison test on a column whose catalog type is a string.
 If `ground.py` reports that `dbt-mcp` is configured and reachable
 (see its own output), you may additionally call its `get_lineage_dev` /
 `get_node_details_dev` tools on a matched model for richer detail
-(contract/constraints, adapter tags) to include in the proposal. Treat this
-purely as enrichment — never required, never a substitute for the
-manifest-based match.
+(contract/constraints, adapter tags) to include in the proposal, or to
+look up a public model in a sibling dbt Cloud project this script has no
+local manifest for (`.dbt-martmaker/mesh_manifests.yml` only covers
+projects reachable on disk). Treat this purely as enrichment — never
+required, never a substitute for the manifest-based match.
 
 If the dbt project has no `target/manifest.json` at all, **ERROR**:
 `No target/manifest.json found — run 'dbt parse' in this project first.`
@@ -209,6 +227,47 @@ Do not fall back to guessing from the sheet's prose alone.
 
 **Never call `dbt build`, `dbt run`, or `dbt test`** — grounding is always
 read-only.
+
+## Configuration (optional)
+
+None of these are required. Grounding works the same without any of them
+— each is a way for a project or team to make matching sharper over time,
+never a prerequisite to using the skill at all.
+
+- **`.dbt-martmaker/glossary.yml`** — a project's own synonym pairs, on
+  top of the small built-in list (customer/client, order/purchase, and a
+  few others). Format:
+  ```yaml
+  synonyms:
+    - [signups, registrations]
+    - [members, subscribers]
+  ```
+  Add a pair here when a real stakeholder term keeps reading as `blocked`
+  or `ambiguous` against a model whose name uses different words for the
+  same thing.
+- **`.dbt-martmaker/mesh_manifests.yml`** — sibling dbt Mesh projects
+  reachable on disk, so their **public** models (`access: public` in
+  their own manifest) become grounding candidates too:
+  ```yaml
+  projects:
+    - name: shared_models
+      manifest: ../shared-models-repo/target/manifest.json
+  ```
+  A project not listed here, or not on disk, is invisible to grounding —
+  use the `dbt-mcp` path above for a project that only exists in dbt
+  Cloud.
+- **`.dbt-martmaker/corrections.jsonl`** — one JSON object per line,
+  append-only, written by you (see Rules of engagement) whenever a human
+  tells you a match was wrong: `{"reference": "...", "correct_candidate":
+  "..."}`. Checked before scoring on every future run of that exact
+  reference — this is the only way a correction, once given, is never
+  asked again.
+- **`VOYAGE_API_KEY`** environment variable — enables embedding-based
+  matching via the Voyage AI API (Anthropic's recommended embeddings
+  provider). Absent, or the API call fails for any reason: grounding
+  behaves exactly as it does with no network access at all.
+  `VOYAGE_MODEL` optionally overrides the default model
+  (`voyage-4-lite`).
 
 ## Step 4 — Check the dbt Semantic Layer
 
@@ -344,7 +403,12 @@ slices this way, not one undifferentiated batch. For each row:
   `draft__` prefix is never dropped by this skill, only by the human when
   promoting it). The SQL exists to satisfy the assertions the proposal
   already stated in Step 5 — write it as delivering on that stated
-  contract, not as a fresh, unrelated pass over the row.
+  contract, not as a fresh, unrelated pass over the row. If the matched
+  row's `source_project` is set (a dbt Mesh public model, not a local
+  one), the `ref()` must be the two-argument cross-project form —
+  `{{ ref('<source_project>', '<model>') }}` — never the local
+  single-argument form, which would resolve to the wrong model or fail to
+  resolve at all.
 - Add an entry to a shared
   `.dbt-martmaker/drafts/<slug>/models/draft___<group>__models.yml` (schema
   file, using `templates/schema.yml.tmpl`) with:
@@ -409,9 +473,10 @@ Write/update `.dbt-martmaker/drafts/<slug>/meta.json`:
 ## Step 8 — Summary
 
 Print a short summary: how many rows were matched/ambiguous/blocked, how
-many carried a Semantic Layer match from Step 4, where the proposal (and,
-once built, draft files) were written, and a reminder that nothing was
-committed or built against the warehouse.
+many carried a Semantic Layer match from Step 4, how many matched via a
+remembered correction or a sibling dbt Mesh project, where the proposal
+(and, once built, draft files) were written, and a reminder that nothing
+was committed or built against the warehouse.
 
 ## Rules of engagement
 
@@ -440,3 +505,9 @@ committed or built against the warehouse.
   in the summary as a suggestion — do not edit `.gitignore` yourself.
 - Process one metric sheet fully before starting another if asked to handle
   multiple.
+- When a human tells you, in conversation, that a match Step 3 produced
+  was wrong, append one line to `.dbt-martmaker/corrections.jsonl` before
+  proceeding: `{"reference": "<the exact reference text>",
+  "correct_candidate": "<the real model name>"}`. This is the only
+  mechanism that makes a correction stick for future runs — without it,
+  the same reference makes the same mistake again next time.

@@ -36,10 +36,16 @@ custom test where one fits:
    (`dbt-bouncer.yml`, or sampled from existing marts) and surveys generic
    tests already in use — built-in, package, and custom — so it can reuse
    your project's own conventions instead of a generic default.
-3. Grounds each candidate against `target/manifest.json` — **matched**,
-   **ambiguous**, or **blocked**, never guessed. When `target/catalog.json`
-   is present, a matched or ambiguous candidate also carries each column's
-   real warehouse data type.
+3. Grounds each candidate against `target/manifest.json`, and against
+   public models in any sibling dbt Mesh project you've configured —
+   **matched**, **ambiguous**, or **blocked**, never guessed. When
+   `target/catalog.json` is present, a matched or ambiguous candidate also
+   carries each column's real warehouse data type. A project's own
+   `glossary.yml` and a remembered `corrections.jsonl` (see
+   [`skills/dbt-martmaker/AGENTS.md`](../skills/dbt-martmaker/AGENTS.md#configuration-optional))
+   sharpen matching further, and an optional `VOYAGE_API_KEY` adds
+   embedding-based similarity as one more signal — never a way to
+   auto-match on its own.
 4. Checks whether the metric already exists as a live metric in your dbt
    Semantic Layer, when the project has one (`target/semantic_manifest.json`).
    A confident hit never gets silently duplicated as a new mart — it
