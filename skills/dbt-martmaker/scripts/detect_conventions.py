@@ -52,31 +52,70 @@ def detect_naming_from_bouncer(project_root: Path) -> dict | None:
     return None
 
 
-def sample_naming_from_files(project_root: Path) -> dict | None:
+# Not every project keeps marts in a dedicated models/marts/ subfolder --
+# dbt's own jaffle-shop starter, among plenty of real projects, keeps them
+# at the top level of models/ instead. Sampling only ever looked in
+# models/marts/, so a project shaped that way reported "no marts to sample
+# from" despite genuinely having marts.
+NON_MART_MODEL_DIRS = {"staging", "intermediate", "seeds", "snapshots"}
+
+
+def marts_search_root(project_root: Path) -> Path | None:
+    """Where to sample marts conventions from. Prefers models/marts/ when
+    it actually has SQL files in it -- the documented convention. Falls
+    back to models/ itself otherwise; callers must exclude
+    NON_MART_MODEL_DIRS when scanning that fallback, since models/ also
+    contains staging/intermediate/etc."""
     marts_dir = project_root / "models" / "marts"
-    if not marts_dir.exists():
+    if marts_dir.exists() and any(marts_dir.rglob("*.sql")):
+        return marts_dir
+    models_dir = project_root / "models"
+    return models_dir if models_dir.exists() else None
+
+
+def _is_mart_path(path: Path, search_root: Path) -> bool:
+    if search_root.name == "marts":
+        return True
+    parts = set(path.relative_to(search_root).parts[:-1])
+    return not (parts & NON_MART_MODEL_DIRS)
+
+
+def sample_naming_from_files(project_root: Path) -> dict | None:
+    search_root = marts_search_root(project_root)
+    if search_root is None:
         return None
-    sql_files = [p.stem for p in marts_dir.rglob("*.sql")]
+    sql_files = [
+        p.stem for p in search_root.rglob("*.sql") if _is_mart_path(p, search_root)
+    ]
     if not sql_files:
         return None
+
+    location = search_root.relative_to(project_root)
     prefixes = Counter()
     for name in sql_files:
         match = re.match(r"^([a-z]+_)", name)
         if match:
             prefixes[match.group(1)] += 1
     if not prefixes:
-        return None
+        # Real files were found, but none share a prefix -- worth reporting
+        # as "no convention detected", distinct from "nothing found at all".
+        return {
+            "pattern": None,
+            "source": f"sampled:{location} ({len(sql_files)} files) -- no common prefix found",
+        }
     common = sorted(prefixes, key=lambda p: -prefixes[p])
     pattern = "^" + "|^".join(re.escape(p) for p in common)
-    return {"pattern": pattern, "source": f"sampled:models/marts ({len(sql_files)} files)"}
+    return {"pattern": pattern, "source": f"sampled:{location} ({len(sql_files)} files)"}
 
 
 def sample_property_file_pattern(project_root: Path) -> dict | None:
-    marts_dir = project_root / "models" / "marts"
-    if not marts_dir.exists():
+    search_root = marts_search_root(project_root)
+    if search_root is None:
         return None
     per_dir_patterns = {}
-    for yml_file in marts_dir.rglob("*.yml"):
+    for yml_file in search_root.rglob("*.yml"):
+        if not _is_mart_path(yml_file, search_root):
+            continue
         rel_dir = str(yml_file.parent.relative_to(project_root))
         per_dir_patterns.setdefault(rel_dir, []).append(yml_file.name)
     if not per_dir_patterns:

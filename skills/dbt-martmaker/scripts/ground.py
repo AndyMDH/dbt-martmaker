@@ -141,6 +141,22 @@ def _column_types(unique_id: str, catalog: dict) -> dict[str, str]:
     }
 
 
+def _real_columns(unique_id: str, node: dict, catalog: dict) -> tuple[list[str], bool]:
+    """The most complete column list available for this model, and
+    whether it's actually complete. target/catalog.json reflects the real
+    warehouse schema -- every column, documented or not. target/manifest.json
+    only lists columns someone wrote a `columns:` entry for in a
+    schema.yml, which real projects usually document only a subset of
+    (whichever columns have a test on them). Prefer catalog when this node
+    is in it; otherwise fall back to the manifest's documented-only list
+    and say so, so a caller never mistakes "undocumented" for "confirmed
+    absent"."""
+    catalog_columns = catalog.get("nodes", {}).get(unique_id, {}).get("columns", {})
+    if catalog_columns:
+        return sorted(catalog_columns.keys()), True
+    return sorted(node.get("columns", {}).keys()), False
+
+
 def staging_and_intermediate_models(manifest: dict, catalog: dict | None = None) -> list[dict]:
     catalog = catalog or {}
     candidates = []
@@ -153,11 +169,13 @@ def staging_and_intermediate_models(manifest: dict, catalog: dict | None = None)
         original_path = node.get("original_file_path", "")
         if not original_path.replace("\\", "/").startswith(STAGING_INTERMEDIATE_PREFIXES):
             continue
+        columns, columns_complete = _real_columns(unique_id, node, catalog)
         candidates.append(
             {
                 "name": node.get("name", ""),
                 "description": node.get("description", "") or "",
-                "columns": sorted(node.get("columns", {}).keys()),
+                "columns": columns,
+                "columns_complete": columns_complete,
                 "column_types": _column_types(unique_id, catalog),
                 "original_file_path": original_path,
                 "unique_id": unique_id,
@@ -209,6 +227,7 @@ def mesh_candidates(project_root: Path) -> list[dict]:
                     "name": node.get("name", ""),
                     "description": node.get("description", "") or "",
                     "columns": sorted(node.get("columns", {}).keys()),
+                    "columns_complete": False,  # sibling catalog.json isn't read -- documented-only
                     "column_types": {},  # sibling catalog.json isn't read; local-only enrichment
                     "original_file_path": node.get("original_file_path", ""),
                     "unique_id": unique_id,
@@ -439,6 +458,7 @@ def ground_one(
                     "model": c["name"],
                     "description": c["description"],
                     "columns": c["columns"],
+                    "columns_complete": c.get("columns_complete", False),
                     "column_types": c["column_types"],
                     "original_file_path": c["original_file_path"],
                     "source_project": c.get("source_project"),
@@ -467,6 +487,7 @@ def ground_one(
             "model": top["name"],
             "description": top["description"],
             "columns": top["columns"],
+            "columns_complete": top.get("columns_complete", False),
             "column_types": top["column_types"],
             "original_file_path": top["original_file_path"],
             "source_project": top.get("source_project"),
@@ -479,6 +500,7 @@ def ground_one(
             "model": c["name"],
             "description": c["description"],
             "columns": c["columns"],
+            "columns_complete": c.get("columns_complete", False),
             "column_types": c["column_types"],
             "original_file_path": c["original_file_path"],
             "source_project": c.get("source_project"),
@@ -516,6 +538,7 @@ def _blocked_or_embedding_ambiguous(
                         "model": c["name"],
                         "description": c["description"],
                         "columns": c["columns"],
+                        "columns_complete": c.get("columns_complete", False),
                         "column_types": c["column_types"],
                         "original_file_path": c["original_file_path"],
                         "source_project": c.get("source_project"),

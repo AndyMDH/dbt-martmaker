@@ -192,6 +192,12 @@ Step 4). Each `results` entry is one of:
   never as good as a real token-overlap candidate in the same shortlist.
 - **`blocked`**: no candidates at all.
 
+Every candidate also carries `columns_complete`: `true` when its `columns`
+list came from `target/catalog.json` (every real column), `false` when it
+only came from `target/manifest.json` (only documented columns — usually
+a subset). See "Ground the calculation in real columns" in Step 5 for
+what this changes.
+
 Every candidate also carries `source_project`: `null` for a model in this
 project's own manifest, or a project name when the candidate is a public
 model from a sibling dbt Mesh project. **A mesh-sourced match changes how
@@ -320,15 +326,30 @@ note when Step 4 found a match, and — for Matched/resolved rows — the
 proposed new mart file path.
 
 **Ground the calculation in real columns, never a guess wrapped in a
-TODO.** Before stating a Proposed calculation for a Matched or
-resolved-Ambiguous row, check every column name it references against
-that row's `columns` (or `column_types`) list from Step 3. A calculation
-that needs a column not on that list is not confirmed — never state it
-with a "TODO: confirm the column name" placeholder and move on. Instead,
-move the row to Open Questions, naming the model's real available columns
-as candidates, so the mismatch gets resolved before Step 6 ever runs. A
-row with an unconfirmed column reference is not buildable, the same way
-an undecided grain or an unresolved Semantic Layer match isn't.
+TODO — but know what "not in the list" actually means.** Before stating a
+Proposed calculation for a Matched or resolved-Ambiguous row, check every
+column name it references against that row's `columns` list from Step 3,
+and check `columns_complete` alongside it:
+
+- **`columns_complete: true`** (the list came from `target/catalog.json`,
+  which reflects every real warehouse column) — a column not on the list
+  genuinely does not exist. Never state it with a "TODO: confirm the
+  column name" placeholder and move on. Move the row to Open Questions,
+  naming the model's real available columns as candidates, so the
+  mismatch gets resolved before Step 6 ever runs. A row with a confirmed-
+  absent column reference is not buildable, the same way an undecided
+  grain or an unresolved Semantic Layer match isn't.
+- **`columns_complete: false`** (the list came only from `target/manifest.json`,
+  which lists a column only if someone wrote a `columns:` entry for it in
+  a schema.yml — most real projects document a subset, usually whichever
+  columns carry a test) — a column not on the list is merely
+  *undocumented*, not confirmed absent. Do not block the row on this
+  alone. State the Proposed calculation using the column your reading of
+  `reasoning` implies, and say plainly that its existence is assumed, not
+  confirmed (e.g. "assumes an `amount` column on `stg_payments`, not
+  documented in this project's schema.yml — confirm before building").
+  This is a visible assumption for the stakeholder to catch, not a TODO
+  buried in SQL and not a wrong "this column doesn't exist" block either.
 
 Quote the short fragment of `reasoning` that most directly justifies the
 Proposed calculation, e.g. `— based on "refunds have skewed it negative

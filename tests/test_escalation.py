@@ -88,7 +88,7 @@ def test_different_metrics_tracked_independently(tmp_path):
     assert result2["escalate"] is False
 
 
-def test_should_escalate_respects_a_higher_threshold(tmp_path):
+def test_should_escalate_respects_a_higher_threshold():
     prior = [{"status": "blocked"}, {"status": "ambiguous"}]
     assert escalation.should_escalate(prior, "blocked", threshold=3) is True
     assert escalation.should_escalate(prior[:1], "blocked", threshold=3) is False
