@@ -10,9 +10,10 @@
 </p>
 
 <p align="center">
-  This is an agent skill, not a package or a hosted service. Claude Code
-  (or any <code>AGENTS.md</code>-reading agent) follows these instructions
-  directly, calling a few small Python scripts along the way.
+  This is an agent skill: Claude Code (or any <code>AGENTS.md</code>-reading
+  agent) follows these instructions directly, calling a few small Python
+  scripts along the way. There is no package to install and no service to
+  run.
 </p>
 
 <p align="center">
@@ -45,14 +46,13 @@ a single file.
 /plugin install dbt-martmaker
 ```
 
-This is a normal Claude Code plugin install. It needs no clone and no
-script, and `/plugin update dbt-martmaker` picks up new releases. It needs
-a dbt project with a `target/manifest.json` file. If the project has none
-yet, run `dbt parse` first.
+This installs dbt-martmaker as a Claude Code plugin — no cloning required.
+It needs a dbt project with a `target/manifest.json` file. If the project
+has none yet, run `dbt parse` first.
 
-To use it in one repo only, or without the plugin system, clone the repo
-and run `./install.sh --project`. See [`install.sh`](install.sh) for the
-project-scoped and copy-instead-of-symlink options.
+Working in one repo only, or not using the plugin system? Clone the repo
+and run `./install.sh --project` instead. See [`install.sh`](install.sh)
+for more options.
 
 Not sure the project has everything the skill needs? Run
 `python scripts/doctor.py` first — see [Utilities](#utilities).
@@ -93,43 +93,16 @@ approved, and the under-the-hood steps: [`docs/USAGE.md`](docs/USAGE.md).
 - **Checks the dbt Semantic Layer first.** If your project runs
   MetricFlow, a metric that already exists there is flagged. It is never
   duplicated as a new physical mart.
-- **Never guesses, and gets sharper over time.** Every match is
-  **matched**, **ambiguous**, or **blocked** — never invented. A project
-  can teach it its own vocabulary (`glossary.yml`), and every human
-  correction is remembered for next time (`corrections.jsonl`). An
-  optional embeddings API adds one more signal, never a way to auto-match
-  on its own. See [Matching](#matching).
+- **Never guesses, and gets sharper over time.** A project can teach it
+  new vocabulary, remember every human correction, and opt into
+  embedding-based matching as one more signal — never a way to auto-match
+  by itself. Full detail:
+  [`AGENTS.md`](skills/dbt-martmaker/AGENTS.md#configuration-optional).
 - **Reuses your project's conventions.** Naming, materialization, and
   existing generic tests come from your project. Nothing is assumed.
 - **Never runs dbt.** It never runs `dbt build`, `run`, or `test`. The
   output is a proposal plus draft SQL and schema.yml, for you to review
   and promote yourself.
-
-## Matching
-
-Grounding starts with token overlap between your reference and the real
-model names, columns, and descriptions in `target/manifest.json`. Three
-optional layers make it sharper without changing what "matched" means —
-no layer can lower the bar, only widen what gets found:
-
-- **`.dbt-martmaker/glossary.yml`** — your own synonym pairs, on top of a
-  small built-in list. Add a pair here when a real stakeholder term keeps
-  reading as blocked against a model that names the same thing
-  differently.
-- **`.dbt-martmaker/corrections.jsonl`** — append-only, one line per human
-  correction. Checked before every future run of that exact reference, so
-  the tool never makes the same wrong match twice.
-- **`VOYAGE_API_KEY`** — set this to enable embedding-based similarity via
-  the Voyage AI API. It can lift a `blocked` reference to `ambiguous` when
-  it finds something token overlap missed, and it can attach a confidence
-  score to an existing match — but it can never auto-match by itself.
-  Absent the key, or on any API failure, grounding runs exactly as it
-  does offline.
-
-Running dbt Mesh? List sibling projects in
-`.dbt-martmaker/mesh_manifests.yml`, and their public models join the
-candidate pool too. Full detail on all four:
-[`skills/dbt-martmaker/AGENTS.md`](skills/dbt-martmaker/AGENTS.md#configuration-optional).
 
 ## Utilities
 
@@ -148,6 +121,7 @@ Two read-only status checks, outside the main propose-then-build flow:
 | | |
 |---|---|
 | [`docs/USAGE.md`](docs/USAGE.md) | Full walkthrough — example sheet, proposal, drafted SQL/schema.yml, and the under-the-hood steps. |
+| [`skills/dbt-martmaker/AGENTS.md`](skills/dbt-martmaker/AGENTS.md) | The full spec this skill follows, step by step — including the glossary, corrections log, embeddings, and dbt Mesh configuration. |
 | [`CHANGELOG.md`](CHANGELOG.md) | What changed, release by release. |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Local development setup, the branch strategy, and how a release is tagged. |
 
