@@ -24,6 +24,7 @@ naming_convention_detected_from: <dbt-bouncer.yml | sampled:models/marts | none>
 - Grounding: <matched "<model>" | ambiguous - candidates: [...] | blocked - no matching staging/intermediate model found>
 - Semantic Layer: <omit this line entirely when target/semantic_manifest.json isn't present or found no match — otherwise: "Already appears to exist as MetricFlow metric `<name>` — see Open Questions before this row is built.">
 - Status: <Matched | Ambiguous | Blocked>
+- Needs a conversation: <omit this line entirely when scripts/escalation.py reported escalate: false — otherwise: "Yes — this has stayed <status> for <total_attempts> revisions. A quick conversation will likely resolve it faster than another round on the sheet.">
 
 **What the output would look like** *(fake data — shape only, no query was run)*:
 
@@ -66,6 +67,10 @@ Open questions. -->
   column ("The calculation for <metric> needs a `<column>` column, but
   `<model>` doesn't have one — did you mean one of: <real columns from
   Step 3>?"), or any other unresolved item>
+- [ ] 🗣️ <one line per escalated row — distinct in kind, not an ordinary
+  Open Question: "<metric> has stayed <status> for <total_attempts>
+  revisions on this sheet. Worth a quick conversation rather than
+  revising the sheet again — happy to jump on a call if useful.">
 
 ## Next steps
 1. Resolve open questions above.
