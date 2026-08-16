@@ -62,40 +62,49 @@ PyYAML, and a few optional extras, and tells you exactly what is missing.
 
 ## Quickstart
 
-`cd` into your dbt project and ask your agent:
+Six steps, start to finish:
 
-> Set up a dbt-martmaker metric sheet for churn metrics, then run it.
+1. `cd` into your dbt project and ask your agent:
 
-That creates `.dbt-martmaker/sheets/churn-metrics.csv`. Each row holds one
-metric, described in the stakeholder's own words, not SQL
-([full file](examples/churn-metrics.csv)):
+   > Set up a dbt-martmaker metric sheet for churn metrics, then run it.
 
-<p align="center">
-  <img src="examples/sheet-preview.svg" alt="example metric sheet" width="780">
-</p>
+   This creates `.dbt-martmaker/sheets/churn-metrics.csv`. Each row holds
+   one metric, described in the stakeholder's own words, not SQL
+   ([full file](examples/churn-metrics.csv)):
 
-The tool grounds each candidate table and column against
-`target/manifest.json`, and against your dbt Semantic Layer too, if you
-run one. Every result comes back **matched**, **ambiguous**, or
-**blocked**. A project can teach it new vocabulary, remember past
-corrections, and opt into embedding-based matching as one more signal,
-but none of that can auto-match on its own — the tool still asks before
-it drafts anything. This is the proposal's summary table
-([full file](examples/proposal.md)):
+   <p align="center">
+     <img src="examples/sheet-preview.svg" alt="example metric sheet" width="780">
+   </p>
 
-<p align="center">
-  <img src="examples/proposal-preview.svg" alt="example proposal summary table" width="900">
-</p>
+2. Have the stakeholder fill in each row, or fill it in yourself from what
+   they told you. No SQL required — just what the metric means and why
+   they want it.
+3. Ask your agent to run dbt-martmaker on the sheet (or say so in the same
+   message as step 1). It checks every candidate table and column against
+   your real project, and writes a proposal. **Nothing is built yet.**
+4. Read the proposal. This is the summary table
+   ([full file](examples/proposal.md)):
+
+   <p align="center">
+     <img src="examples/proposal-preview.svg" alt="example proposal summary table" width="900">
+   </p>
+
+   Resolve anything listed under Open Questions.
+5. Reply to approve. Only now does the agent draft SQL and schema.yml
+   files, into `.dbt-martmaker/drafts/`.
+6. Review the drafted files. Drop the `draft__` prefix and move them into
+   your real `models/marts/` yourself. dbt-martmaker never does this step
+   for you.
 
 Working with more than one sheet at once? `python scripts/list_sheets.py
 <project_root>` shows each one's status: no proposal yet, proposed, built,
 or stale.
 
-Full walkthrough — per-metric detail, drafted SQL/schema.yml once
-approved, and the under-the-hood steps: [`docs/USAGE.md`](docs/USAGE.md).
-Everything above (the glossary, corrections, embeddings, dbt Mesh, and how
-escalation works) is documented step by step in
-[`AGENTS.md`](skills/dbt-martmaker/AGENTS.md#configuration-optional).
+For how grounding actually decides matched/ambiguous/blocked, and how the
+glossary, corrections, embeddings, dbt Mesh, and escalation each fit into
+that: [`AGENTS.md`](skills/dbt-martmaker/AGENTS.md#configuration-optional)
+documents it step by step. [`docs/USAGE.md`](docs/USAGE.md) has the full
+worked example, including the drafted SQL/schema.yml from step 6.
 
 ## Documentation
 
