@@ -375,11 +375,34 @@ the grain choice directly with the candidate tables as previews — but the
 proposal file must still contain the alternatives and the Open Questions
 line, so the choice survives outside the conversation.
 
+**Escalate to a real conversation, not another round, when the sheet has
+already tried.** For every row, run `scripts/escalation.py <project_root>
+<slug> "<metric>" <status> <sheet_checksum>` after Step 3 — matched rows
+too, not just Ambiguous/Blocked ones, so a later regression is judged
+against accurate history. It reads
+`.dbt-martmaker/drafts/<slug>/history.json` (this metric's outcome on
+every prior revision of this exact sheet) and reports `escalate: true`
+once a row has stayed unresolved for two consecutive revisions — never on
+a first attempt, and never for a row that's already matched. Default to
+the sheet every time; a stakeholder revising an Open Question in writing
+is the cheap path, and it stays the cheap path unless it has genuinely
+already failed once.
+
+When `escalate` is `true`, that row's Open Questions line is different in
+kind, not just degree: instead of asking the stakeholder to revise the
+sheet again, recommend a short conversation and say plainly why — *"This
+has stayed `<status>` for `<total_attempts>` revisions; a quick
+conversation will likely resolve it faster than a third round on the
+sheet."* Never phrase an escalated row as an ordinary Open Question the
+stakeholder is expected to answer by revising the sheet again — that
+repeats a channel that has already been tried and has already failed.
+
 Every row that is `ambiguous` (and unresolved) or `blocked`, every grain
 left undecided, and every Semantic Layer match from Step 4 becomes an Open
-Questions checklist line. Never omit a row because it was hard to resolve.
-A row with an undecided grain is not buildable in Step 6, even if approved
-wholesale — the grain choice is part of what approval means.
+Questions checklist line — an escalated row as a distinct, clearly marked
+line, never an ordinary one. Never omit a row because it was hard to
+resolve. A row with an undecided grain is not buildable in Step 6, even if
+approved wholesale — the grain choice is part of what approval means.
 
 This is where you stop (see "Two-phase flow" above) — do not proceed to
 Step 6 in the same turn unless the human has already told you to build it.
@@ -474,9 +497,11 @@ Write/update `.dbt-martmaker/drafts/<slug>/meta.json`:
 
 Print a short summary: how many rows were matched/ambiguous/blocked, how
 many carried a Semantic Layer match from Step 4, how many matched via a
-remembered correction or a sibling dbt Mesh project, where the proposal
-(and, once built, draft files) were written, and a reminder that nothing
-was committed or built against the warehouse.
+remembered correction or a sibling dbt Mesh project, how many were
+escalated (see Step 5) and so need a conversation rather than another
+sheet revision, where the proposal (and, once built, draft files) were
+written, and a reminder that nothing was committed or built against the
+warehouse.
 
 ## Rules of engagement
 
@@ -511,3 +536,10 @@ was committed or built against the warehouse.
   "correct_candidate": "<the real model name>"}`. This is the only
   mechanism that makes a correction stick for future runs — without it,
   the same reference makes the same mistake again next time.
+- Default to the sheet, every time, for every row — it is the cheap
+  channel and it gets a real first try. Escalate to a conversation (see
+  Step 5) only when `scripts/escalation.py` reports `escalate: true`.
+  Never suggest a conversation on a row's first unresolved appearance,
+  and never keep silently re-asking the same unresolved question round
+  after round once escalation has fired — say plainly that the sheet has
+  already been tried.

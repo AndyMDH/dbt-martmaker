@@ -3,6 +3,19 @@
 All notable changes to this project are documented here. Format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0] - 2026-08-16
+
+### Added
+- **Escalation trigger** (`scripts/escalation.py`) — the tool's answer to
+  "when does a metric need an actual conversation, not another sheet
+  revision?" Tracks each metric's status across sheet revisions in
+  `.dbt-martmaker/drafts/<slug>/history.json`. A row that stays
+  `ambiguous`/`blocked` for two consecutive revisions gets a distinct
+  "needs a conversation" marker in the proposal — never on a first
+  attempt, and never for an already-matched row. Philosophy: default to
+  the cheap, async channel (the sheet) every time; escalate to the
+  expensive one only once the cheap one has demonstrably already failed.
+
 ## [0.3.0] - 2026-08-16
 
 ### Added

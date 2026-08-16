@@ -37,7 +37,9 @@ calculation from a vague description, and pick the right tests.
 dbt-martmaker moves that first pass into a structured sheet. A stakeholder
 fills it out alone, with no SQL required. The tool grounds every claim
 against your actual project, and stops for your approval before it writes
-a single file.
+a single file. It also knows the difference between "this needs another
+look at the sheet" and "this needs an actual conversation" — and says so,
+instead of asking the same written question a third time.
 
 ## Install
 
@@ -99,6 +101,10 @@ approved, and the under-the-hood steps: [`docs/USAGE.md`](docs/USAGE.md).
 - **Never runs dbt.** It never runs `dbt build`, `run`, or `test`. The
   output is a proposal plus draft SQL and schema.yml, for you to review
   and promote yourself.
+- **Escalates instead of looping.** A metric can stay unclear even after a
+  stakeholder revises the sheet. When that happens twice in a row, the
+  proposal flags it plainly and suggests a real conversation, instead of
+  asking the same written question again.
 
 ## Utilities
 
