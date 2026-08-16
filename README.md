@@ -87,16 +87,49 @@ approved, and the under-the-hood steps: [`docs/USAGE.md`](docs/USAGE.md).
 ## Scope
 
 - **Mart layer only.** It combines models that already exist in
-  `models/staging/` and `models/intermediate/`. A metric that needs a new
+  `models/staging/` and `models/intermediate/` — plus, when configured,
+  public models from a sibling dbt Mesh project. A metric that needs a new
   raw source is flagged **blocked**, never attempted.
 - **Checks the dbt Semantic Layer first.** If your project runs
   MetricFlow, a metric that already exists there is flagged. It is never
   duplicated as a new physical mart.
+- **Never guesses, and gets sharper over time.** Every match is
+  **matched**, **ambiguous**, or **blocked** — never invented. A project
+  can teach it its own vocabulary (`glossary.yml`), and every human
+  correction is remembered for next time (`corrections.jsonl`). An
+  optional embeddings API adds one more signal, never a way to auto-match
+  on its own. See [Matching](#matching).
 - **Reuses your project's conventions.** Naming, materialization, and
   existing generic tests come from your project. Nothing is assumed.
 - **Never runs dbt.** It never runs `dbt build`, `run`, or `test`. The
   output is a proposal plus draft SQL and schema.yml, for you to review
   and promote yourself.
+
+## Matching
+
+Grounding starts with token overlap between your reference and the real
+model names, columns, and descriptions in `target/manifest.json`. Three
+optional layers make it sharper without changing what "matched" means —
+no layer can lower the bar, only widen what gets found:
+
+- **`.dbt-martmaker/glossary.yml`** — your own synonym pairs, on top of a
+  small built-in list. Add a pair here when a real stakeholder term keeps
+  reading as blocked against a model that names the same thing
+  differently.
+- **`.dbt-martmaker/corrections.jsonl`** — append-only, one line per human
+  correction. Checked before every future run of that exact reference, so
+  the tool never makes the same wrong match twice.
+- **`VOYAGE_API_KEY`** — set this to enable embedding-based similarity via
+  the Voyage AI API. It can lift a `blocked` reference to `ambiguous` when
+  it finds something token overlap missed, and it can attach a confidence
+  score to an existing match — but it can never auto-match by itself.
+  Absent the key, or on any API failure, grounding runs exactly as it
+  does offline.
+
+Running dbt Mesh? List sibling projects in
+`.dbt-martmaker/mesh_manifests.yml`, and their public models join the
+candidate pool too. Full detail on all four:
+[`skills/dbt-martmaker/AGENTS.md`](skills/dbt-martmaker/AGENTS.md#configuration-optional).
 
 ## Utilities
 
