@@ -49,3 +49,17 @@ def test_no_convention_source_is_reported_when_bouncer_and_marts_both_absent(dbt
     assert result["checks"]["dbt_bouncer_config_present"] is False
     assert result["checks"]["marts_dir_has_files"] is False
     assert any("nothing to sample" in m for m in result["messages"])
+
+
+def test_marts_dir_has_files_reuses_detect_conventions_fallback(dbt_project):
+    """Regression guard: doctor.py's marts check must agree with
+    detect_conventions.py's own marts-fallback logic (models/marts/, or
+    models/ itself when that's empty) -- a second, independent
+    models/marts/-only check drifted out of sync with it once, and must
+    not be able to again."""
+    project_root = dbt_project(
+        {}, extra_files={"models/customers.sql": "select 1"}
+    )
+    result = doctor.build_report(project_root)
+    assert result["checks"]["marts_dir_has_files"] is True
+    assert not any("nothing to sample" in m for m in result["messages"])

@@ -21,23 +21,18 @@ from pathlib import Path
 try:
     import yaml
 except ImportError:
-    print(
-        json.dumps(
-            {
-                "error": "missing_dependency",
-                "message": (
-                    "PyYAML is required to parse dbt_project.yml/dbt-bouncer.yml. "
-                    "Install it in the same environment dbt runs in: pip install pyyaml"
-                ),
-            }
-        )
-    )
-    sys.exit(1)
+    yaml = None
+
+# The exit-on-missing-PyYAML behavior lives in main() only, not at import
+# time. A module-level exit would make this file impossible to import from
+# anywhere else (e.g. doctor.py reusing sample_naming_from_files(), which
+# never touches YAML at all) whenever PyYAML happens to be missing --
+# exactly the environment doctor.py exists to detect and report gracefully.
 
 
 def detect_naming_from_bouncer(project_root: Path) -> dict | None:
     bouncer_path = project_root / "dbt-bouncer.yml"
-    if not bouncer_path.exists():
+    if not bouncer_path.exists() or yaml is None:
         return None
     data = yaml.safe_load(bouncer_path.read_text()) or {}
     for check in data.get("manifest_checks", []) or []:
@@ -125,7 +120,7 @@ def sample_property_file_pattern(project_root: Path) -> dict | None:
 
 def detect_materialization(project_root: Path) -> dict | None:
     project_yml = project_root / "dbt_project.yml"
-    if not project_yml.exists():
+    if not project_yml.exists() or yaml is None:
         return None
     data = yaml.safe_load(project_yml.read_text()) or {}
     models_config = data.get("models", {})
@@ -208,6 +203,20 @@ def detect_existing_tests(project_root: Path) -> dict:
 def main() -> None:
     if len(sys.argv) != 2:
         print(json.dumps({"error": "bad_args", "message": "Usage: detect_conventions.py <project_root>"}))
+        sys.exit(1)
+
+    if yaml is None:
+        print(
+            json.dumps(
+                {
+                    "error": "missing_dependency",
+                    "message": (
+                        "PyYAML is required to parse dbt_project.yml/dbt-bouncer.yml. "
+                        "Install it in the same environment dbt runs in: pip install pyyaml"
+                    ),
+                }
+            )
+        )
         sys.exit(1)
 
     project_root = Path(sys.argv[1]).resolve()
