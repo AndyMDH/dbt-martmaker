@@ -218,3 +218,28 @@ def test_existing_tests_none_when_no_manifest(dbt_project):
 
     assert result["builtin"] == {}
     assert "no target/manifest.json" in result["source"]
+
+
+def test_yaml_dependent_functions_degrade_gracefully_without_pyyaml(dbt_project, monkeypatch):
+    """Regression guard: this module used to sys.exit(1) at import time
+    if PyYAML was missing, which made it impossible for another script
+    (doctor.py) to import and reuse the YAML-independent parts of it. The
+    functions that genuinely need YAML must now degrade to None instead
+    of crashing; the ones that never needed it are unaffected."""
+    monkeypatch.setattr(detect_conventions, "yaml", None)
+    bouncer_yml = "manifest_checks:\n  - name: check_model_names\n    include: ^models/marts\n"
+    project_root = dbt_project({}, extra_files={"dbt-bouncer.yml": bouncer_yml})
+
+    assert detect_conventions.detect_naming_from_bouncer(project_root) is None
+    assert detect_conventions.detect_materialization(project_root) is None
+
+
+def test_sample_naming_from_files_never_needed_pyyaml(dbt_project, monkeypatch):
+    monkeypatch.setattr(detect_conventions, "yaml", None)
+    project_root = dbt_project(
+        {}, extra_files={"models/customers.sql": "select 1"}
+    )
+
+    result = detect_conventions.sample_naming_from_files(project_root)
+
+    assert result is not None

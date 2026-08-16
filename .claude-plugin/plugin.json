@@ -1,6 +1,6 @@
 {
   "name": "dbt-martmaker",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Turn a metric requirements sheet into a draft dbt mart model, grounded against your project's own manifest and checked against the dbt Semantic Layer.",
   "author": {
     "name": "Andy Ho",
