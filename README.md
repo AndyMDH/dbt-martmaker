@@ -57,7 +57,9 @@ project with a `target/manifest.json` file. If the project has none yet,
 run `dbt parse` first.
 
 Not sure the project has everything the skill needs? Run
-`python scripts/doctor.py` first. It checks for `target/manifest.json`,
+`python skills/dbt-martmaker/scripts/doctor.py` first (path relative to
+this repo; a plugin/skill install has `scripts/doctor.py` inside the
+installed skill directory instead). It checks for `target/manifest.json`,
 PyYAML, and a few optional extras, and tells you exactly what is missing.
 
 ## Quickstart
@@ -96,15 +98,43 @@ Six steps, start to finish:
    your real `models/marts/` yourself. dbt-martmaker never does this step
    for you.
 
-Working with more than one sheet at once? `python scripts/list_sheets.py
-<project_root>` shows each one's status: no proposal yet, proposed, built,
-or stale.
+Working with more than one sheet at once?
+`python skills/dbt-martmaker/scripts/list_sheets.py <project_root>` shows
+each one's status: no proposal yet, proposed, built, or stale.
 
 For how grounding actually decides matched/ambiguous/blocked, and how the
 glossary, corrections, embeddings, dbt Mesh, and escalation each fit into
 that: [`AGENTS.md`](skills/dbt-martmaker/AGENTS.md#configuration-optional)
 documents it step by step. [`docs/USAGE.md`](docs/USAGE.md) has the full
 worked example, including the drafted SQL/schema.yml from step 6.
+
+## How it works
+
+Nine steps. Steps 0-5 run every time. Step 6 runs only after you approve
+the proposal step 5 writes.
+
+| Step | What happens | What runs |
+|---|---|---|
+| 0 | Find `dbt_project.yml` above the current directory. Checksum the sheet. | — |
+| 1 | Read the sheet. For each row, mine the `reasoning` text for candidate tables, a proposed calculation, and the grain. | — (the agent reads the text itself) |
+| 2 | Detect the mart naming pattern, the materialization default, and which generic tests the project already uses. | `scripts/detect_conventions.py <project_root>` |
+| 3 | Match each candidate reference against real models in `target/manifest.json` — plus `target/catalog.json`, dbt Mesh manifests, your glossary, and past corrections, when present. | `scripts/ground.py <project_root> "<references>" "<metric>"` |
+| 4 | Check whether the metric already exists as a live dbt Semantic Layer metric. | same `ground.py` call, its `semantic_layer` field |
+| 5 | Check whether this row has already stayed unresolved for two sheet revisions in a row. Write `proposal.md`. **Stop and wait for approval.** | `scripts/escalation.py <project_root> <slug> "<metric>" <status> <checksum>` |
+| 6 | Write `draft__<name>.sql` and its schema.yml entry. One metric at a time — SQL and tests together — for matched rows with a decided grain only. | — (runs only after you approve) |
+| 7 | Write `meta.json`: the sheet's checksum and every row's status. | — |
+| 8 | Print a summary: matched/ambiguous/blocked counts, and where the files went. | — |
+
+Two read-only checks you can run any time, outside this flow:
+
+- `scripts/doctor.py [start_dir]` — is this project ready? Checks for
+  `target/manifest.json`, PyYAML, and a few optional extras.
+- `scripts/list_sheets.py <project_root>` — status of every sheet already
+  in `.dbt-martmaker/sheets/`.
+
+Script paths above are relative to the installed skill directory. The
+agent resolves them on its own; a human running one by hand needs the
+full path — see [Install](#install).
 
 ## Documentation
 
