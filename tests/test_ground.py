@@ -271,7 +271,7 @@ def test_semantic_layer_metrics_label_defaults_empty_when_absent(dbt_project):
     assert metrics[0]["label"] == ""
 
 
-def test_semantic_layer_confident_hit_is_surfaced(dbt_project):
+def test_semantic_layer_confident_hit_is_surfaced():
     semantic_metrics = [{"name": "avg_payment_amount", "label": "", "description": ""}]
 
     match = ground.ground_against_semantic_layer("avg payment amount", semantic_metrics)
@@ -593,6 +593,89 @@ def test_ground_one_embedding_below_floor_stays_blocked(dbt_project):
     )
 
     assert result["status"] == "blocked"
+
+
+def test_columns_complete_false_when_manifest_only(dbt_project):
+    """Regression guard for the real-project finding: manifest.json only
+    lists a column when someone documented it in schema.yml, which is
+    usually a strict subset of what actually exists. columns_complete
+    must say so, rather than implying the list is exhaustive."""
+    nodes = {}
+    nodes.update(make_model("stg_payments", "staging", columns=["payment_id"]))
+    project_root = dbt_project(nodes)
+
+    manifest = ground.load_manifest(project_root)
+    candidates = ground.staging_and_intermediate_models(manifest)
+    result = ground.ground_one("payments", candidates)
+
+    assert result["status"] == "matched"
+    assert result["columns"] == ["payment_id"]
+    assert result["columns_complete"] is False
+
+
+def test_columns_complete_true_and_full_when_catalog_present(dbt_project):
+    """The real fix: when catalog.json is present, the column list comes
+    from it (every real column), not just the manifest's documented
+    subset -- catalog.json is strictly more complete."""
+    nodes = {}
+    nodes.update(make_model("stg_payments", "staging", columns=["payment_id"]))
+    catalog = {
+        "nodes": {
+            "model.test_project.stg_payments": {
+                "columns": {
+                    "payment_id": {"type": "integer"},
+                    "order_id": {"type": "integer"},
+                    "amount": {"type": "numeric"},
+                }
+            }
+        }
+    }
+    project_root = dbt_project(
+        nodes, extra_files={"target/catalog.json": json.dumps(catalog)}
+    )
+
+    manifest = ground.load_manifest(project_root)
+    catalog_data = ground.load_catalog(project_root)
+    candidates = ground.staging_and_intermediate_models(manifest, catalog_data)
+    result = ground.ground_one("payments", candidates)
+
+    assert result["columns_complete"] is True
+    assert result["columns"] == ["amount", "order_id", "payment_id"]
+
+
+def test_columns_complete_propagated_on_ambiguous_shortlist(dbt_project):
+    nodes = {}
+    nodes.update(make_model("stg_customers", "staging"))
+    nodes.update(
+        make_model(
+            "int_customers", "intermediate", description="basic customer information"
+        )
+    )
+    project_root = dbt_project(nodes)
+
+    manifest = ground.load_manifest(project_root)
+    candidates = ground.staging_and_intermediate_models(manifest)
+    result = ground.ground_one("customers", candidates)
+
+    assert result["status"] == "ambiguous"
+    assert all(c["columns_complete"] is False for c in result["candidates"])
+
+
+def test_columns_complete_false_for_mesh_candidates():
+    candidates = [
+        {
+            "name": "stg_shared",
+            "description": "",
+            "columns": ["id"],
+            "columns_complete": False,
+            "column_types": {},
+            "original_file_path": "models/staging/stg_shared.sql",
+            "source_project": "sibling",
+        }
+    ]
+    result = ground.ground_one("shared", candidates)
+    assert result["status"] == "matched"
+    assert result["columns_complete"] is False
 
 
 def test_ground_one_embedding_never_auto_matches_by_itself(dbt_project):

@@ -3,7 +3,47 @@
 All notable changes to this project are documented here. Format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [0.4.0] - 2026-08-16
+## [0.5.0] - 2026-08-16
+
+Fixes three real bugs found by running the skill end to end, by hand,
+against a real multi-metric sheet in `martmaker-sandbox` -- the exact
+kind of orchestration issue unit tests structurally cannot catch, since
+every prior test used hand-built fixtures where column lists meant
+whatever the test wanted them to mean.
+
+### Fixed
+- **`target/manifest.json`'s column list is documentation, not reality.**
+  dbt only lists a column there if someone wrote a `columns:` entry for
+  it in a schema.yml -- real projects usually document only a subset
+  (whichever columns carry a test). Grounding was treating that list as
+  exhaustive, so a real, undocumented column (confirmed by reading the
+  actual model SQL) would fail the "ground the calculation in real
+  columns" check added in 0.2.0, forcing a wrong Open Question. Two-part
+  fix: `columns` now comes from `target/catalog.json` (every real column)
+  when it's available, since `ground.py` was already reading catalog.json
+  for `column_types` and just wasn't using it for the column list itself.
+  A new `columns_complete` flag tells the calling agent which case it's
+  in; `AGENTS.md`'s column-verification rule now blocks only when
+  `columns_complete: true` and treats an undocumented column as a stated
+  assumption, not a false "doesn't exist."
+- **`doctor.py` recommended `dbt docs generate`, which doesn't exist on
+  dbt-fusion.** The message now names both the classic-dbt command and
+  that other engines have their own equivalent, instead of assuming one
+  specific engine.
+- **Convention sampling only ever looked in `models/marts/`.** A project
+  that keeps its marts at the top level of `models/` instead (dbt's own
+  jaffle-shop starter is shaped this way) reported "no marts to sample
+  from" despite genuinely having marts. `detect_conventions.py` now falls
+  back to scanning `models/` itself, excluding staging/intermediate/
+  seeds/snapshots, when `models/marts/` is empty or missing. Also now
+  distinguishes "no files found" from "files found, but no shared name
+  prefix" -- the latter is itself a real, reportable convention.
+
+### Added
+- 8 new tests (77 total) covering `columns_complete` end to end and the
+  marts-fallback sampling, plus regression guards for the exact cases
+  found in the real project.
+
 
 ### Added
 - **Escalation trigger** (`scripts/escalation.py`) — the tool's answer to

@@ -71,8 +71,11 @@ def build_report(start: Path) -> dict:
     checks["catalog_present"] = (project_root / "target" / "catalog.json").exists()
     if not checks["catalog_present"]:
         messages.append(
-            "No target/catalog.json -- grounding will work without it, just without real "
-            "column types. Run 'dbt docs generate' to add it."
+            "No target/catalog.json -- grounding still works without it, but a matched "
+            "model's column list falls back to only what's documented in schema.yml, "
+            "which real projects usually document a subset of. On classic dbt, run "
+            "'dbt docs generate' to add it; other engines have their own equivalent "
+            "(e.g. dbt-fusion's 'dbt man --write-catalog')."
         )
 
     checks["semantic_manifest_present"] = (

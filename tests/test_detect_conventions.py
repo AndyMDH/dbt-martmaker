@@ -44,6 +44,81 @@ def test_naming_never_guessed_when_marts_folder_empty(dbt_project):
     assert sampled_result is None
 
 
+def test_naming_falls_back_to_models_root_when_no_marts_subfolder(dbt_project):
+    """Regression guard for the real-project finding: dbt's own
+    jaffle-shop starter (and plenty of real projects) keeps marts at the
+    top level of models/, with no dedicated marts/ subfolder. Sampling
+    must not report "nothing to sample" just because it looked in the
+    wrong place."""
+    project_root = dbt_project(
+        {},
+        extra_files={
+            "models/customers.sql": "select 1",
+            "models/dim_orders.sql": "select 1",
+            "models/staging/stg_customers.sql": "select 1",
+        },
+    )
+
+    result = detect_conventions.sample_naming_from_files(project_root)
+
+    assert result is not None
+    assert "dim_" in result["pattern"]
+    assert "models" in result["source"]
+    assert "staging" not in result["source"]
+
+
+def test_naming_prefers_dedicated_marts_subfolder_when_it_has_files(dbt_project):
+    project_root = dbt_project(
+        {},
+        extra_files={
+            "models/marts/fct_orders.sql": "select 1",
+            "models/customers.sql": "select 1",  # would confuse a naive fallback
+        },
+    )
+
+    result = detect_conventions.sample_naming_from_files(project_root)
+
+    assert result is not None
+    assert "fct_" in result["pattern"]
+    assert "models/marts" in result["source"]
+
+
+def test_naming_reports_no_common_prefix_distinctly_from_nothing_found(dbt_project):
+    """Files were genuinely found, but none share a name prefix (e.g.
+    customers.sql, orders.sql) -- that's a real, reportable convention
+    ("this project doesn't prefix mart names"), not the same as finding
+    no files at all."""
+    project_root = dbt_project(
+        {},
+        extra_files={
+            "models/customers.sql": "select 1",
+            "models/orders.sql": "select 1",
+        },
+    )
+
+    result = detect_conventions.sample_naming_from_files(project_root)
+
+    assert result is not None
+    assert result["pattern"] is None
+    assert "no common prefix" in result["source"]
+
+
+def test_property_file_pattern_falls_back_to_models_root(dbt_project):
+    project_root = dbt_project(
+        {},
+        extra_files={
+            "models/_models.yml": "models: []",
+            "models/staging/schema.yml": "models: []",
+        },
+    )
+
+    result = detect_conventions.sample_property_file_pattern(project_root)
+
+    assert result is not None
+    assert "models" in result["per_directory_samples"]
+    assert "models/staging" not in result["per_directory_samples"]
+
+
 def test_property_file_pattern_is_sampled_per_directory_not_project_wide(dbt_project):
     """Regression guard: dbt_template itself has inconsistent property-file
     naming across marts subdirectories, so this must never assume one
