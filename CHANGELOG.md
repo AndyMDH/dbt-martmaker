@@ -3,9 +3,42 @@
 All notable changes to this project are documented here. Format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [0.2.0] - 2026-08-16
+## [0.3.0] - 2026-08-16
 
 ### Added
+- **Project glossary** (`.dbt-martmaker/glossary.yml`) — a project's own
+  synonym pairs, merged on top of the built-in list. Solves the case a
+  built-in pair can never cover: a term specific to one project's own
+  vocabulary.
+- **Embedding-based matching** via the Voyage AI API (Anthropic's
+  recommended embeddings provider), enabled by setting `VOYAGE_API_KEY`.
+  Enrichment only — it can attach a confidence signal to an existing
+  match, and it can lift a `blocked` reference to `ambiguous` when
+  embeddings find a plausible candidate token overlap missed entirely,
+  but nothing above the embedding floor is ever auto-matched. Absent the
+  key, or on any API failure, grounding behaves exactly as it does
+  offline.
+- **Corrections log** (`.dbt-martmaker/corrections.jsonl`) — once a human
+  corrects a match, it is remembered and applied deterministically to
+  every future run of that exact reference.
+- **dbt Mesh awareness** — public models (`access: public`) from sibling
+  projects listed in `.dbt-martmaker/mesh_manifests.yml` become grounding
+  candidates too, tagged with `source_project`. Step 6 now writes the
+  correct two-argument cross-project `ref()` for a mesh-sourced match.
+  `dbt-mcp`, when configured, is now also documented as a fallback path
+  for a project that only exists in dbt Cloud, not on local disk.
+- Ambiguous-case guidance in `AGENTS.md` now explicitly asks the agent to
+  weigh each candidate's `embedding_score` alongside its own reading of
+  the columns and description — not a rule that picks, one more input to
+  judgment.
+
+### Changed
+- `ground.py`'s candidate pool now includes sibling dbt Mesh public
+  models alongside local staging/intermediate models; a `blocked` result
+  now genuinely means "not found anywhere reachable," not just "not found
+  locally."
+- Step 8's summary now also reports how many rows matched via a
+  remembered correction or a sibling Mesh project.
 - Grounding now checks a project's dbt Semantic Layer
   (`target/semantic_manifest.json`, when present): a metric that already
   exists as a live MetricFlow metric is surfaced as an Open Question
